@@ -1,6 +1,6 @@
 import { TILE } from '../systems/world.ts';
 import type { TileCoord } from '../types/world.ts';
-import type { Player, Enemy } from '../types/entities.ts';
+import type { Player, Enemy, Barrel } from '../types/entities.ts';
 import { findPath } from '../systems/pathfinding.ts';
 import type { WalkableFn } from '../systems/pathfinding.ts';
 
@@ -40,19 +40,20 @@ export function createHoverTracker(canvas: HTMLCanvasElement, getCamera: () => {
 export interface ClickHandlerDeps {
   player: Player;
   enemyAtTile: (x: number, y: number) => Enemy | undefined;
+  barrelAtTile: (x: number, y: number) => Barrel | undefined;
   walkable: WalkableFn;
   getCamera: () => { camX: number; camY: number };
 }
 
-// resolves a canvas click into whichever action applies: attack a clicked enemy,
-// or just walk to the clicked tile
+// resolves a canvas click into whichever action applies: attack a clicked enemy
+// or barrel, or just walk to the clicked tile
 export function createClickHandler(canvas: HTMLCanvasElement, deps: ClickHandlerDeps): void {
   canvas.addEventListener('click', (e) => {
     const { camX, camY } = deps.getCamera();
     const { x, y } = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
     const player = deps.player;
 
-    const target = deps.enemyAtTile(x, y);
+    const target = deps.enemyAtTile(x, y) ?? deps.barrelAtTile(x, y);
     if (target) {
       player.attackTarget = target;
       player.movement.path = [];

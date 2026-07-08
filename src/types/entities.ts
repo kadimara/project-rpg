@@ -53,8 +53,18 @@ export interface Player {
   movement: Movement;
   health: Health;
   combat: Combat;
-  attackTarget: Enemy | null;
+  attackTarget: Enemy | Barrel | null;
+}
+
+// a static, non-moving prop that only exists to soak hits and break
+export interface Barrel {
+  position: Position;
+  health: Health;
+  size: 1;
 }
 
 // either side of an attack - the only two entity kinds with Health + Combat
 export type Combatant = Player | Enemy;
+
+// anything that can be on the receiving end of an attack
+export type Defender = Player | Enemy | Barrel;

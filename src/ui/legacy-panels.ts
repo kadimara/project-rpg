@@ -27,7 +27,9 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
     statPos.textContent = player.position.tileX + ', ' + player.position.tileY;
     statTile.textContent = TILE_NAMES[map[player.position.tileY][player.position.tileX]];
     statFacing.textContent = player.movement.dir;
-    statTarget.textContent = player.attackTarget ? (player.attackTarget.isBoss ? 'boss (' : 'enemy (') + Math.max(0, player.attackTarget.health.hp) + ' hp)' : 'none';
+    statTarget.textContent = player.attackTarget
+      ? ('isBoss' in player.attackTarget ? (player.attackTarget.isBoss ? 'boss (' : 'enemy (') : 'barrel (') + Math.max(0, player.attackTarget.health.hp) + ' hp)'
+      : 'none';
   }
 
   // ---- world map toggle ----

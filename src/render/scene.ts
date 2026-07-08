@@ -1,18 +1,19 @@
 import { TileType } from '../types/world.ts';
 import type { TileGrid, Tree, TileCoord } from '../types/world.ts';
-import type { Player, Enemy } from '../types/entities.ts';
+import type { Player, Enemy, Barrel } from '../types/entities.ts';
 import type { CombatState } from '../types/combat.ts';
 import { TILE, VP_W, VP_H, MAP_W, MAP_H, terrainWalkable, treeBlocksAt } from '../systems/world.ts';
 import { getClampedCamX, getClampedCamY } from './camera.ts';
 import { drawTile, drawObstacle } from './tiles.ts';
 import { drawTree, drawSquareEntity, drawBossEntity } from './entities.ts';
-import { PLAYER_COLOR, PLAYER_EDGE, ENEMY_COLOR, ENEMY_EDGE, BOSS_EDGE } from './colors.ts';
+import { PLAYER_COLOR, PLAYER_EDGE, ENEMY_COLOR, ENEMY_EDGE, BOSS_EDGE, BARREL_COLOR, BARREL_EDGE } from './colors.ts';
 
 export interface SceneDeps {
   map: TileGrid;
   trees: Tree[];
   player: Player;
   enemies: Enemy[];
+  barrels: Barrel[];
   state: CombatState;
   hoveredTile: TileCoord | null;
 }
@@ -23,7 +24,7 @@ interface Sortable {
 }
 
 export function renderScene(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, now: number, deps: SceneDeps): void {
-  const { map, trees, player, enemies, state, hoveredTile } = deps;
+  const { map, trees, player, enemies, barrels, state, hoveredTile } = deps;
 
   const camX = getClampedCamX(player.position.px);
   const camY = getClampedCamY(player.position.py);
@@ -83,6 +84,12 @@ export function renderScene(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasEle
     const sy = t.y * TILE - camY;
     if (sx < -TILE * 2 || sy < -TILE * 2 || sx > canvas.width + TILE || sy > canvas.height + TILE) continue;
     sortables.push({ footY: (t.y + 1) * TILE, draw: () => drawTree(ctx, sx, sy) });
+  }
+  for (const b of barrels) {
+    const sx = b.position.px - camX;
+    const sy = b.position.py - camY;
+    if (sx < -TILE || sy < -TILE || sx > canvas.width || sy > canvas.height) continue;
+    sortables.push({ footY: b.position.py + TILE, draw: () => drawSquareEntity(ctx, sx, sy, BARREL_COLOR, BARREL_EDGE, 3, b.health, now, true) });
   }
   for (const en of enemies) {
     const sx = en.position.px - camX;

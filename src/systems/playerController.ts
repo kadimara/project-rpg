@@ -1,5 +1,5 @@
 import type { Direction } from '../types/world.ts';
-import type { Combatant, Enemy, Player } from '../types/entities.ts';
+import type { Barrel, Combatant, Defender, Enemy, Player } from '../types/entities.ts';
 import { startStep, updateActorAnimation } from '../entities/actor.ts';
 import { tryMove } from '../entities/player.ts';
 import { actorFootprint, tileAdjacentToFootprint } from '../entities/footprint.ts';
@@ -8,9 +8,10 @@ import type { WalkableFn } from './pathfinding.ts';
 
 export interface PlayerControllerDeps {
   enemies: Enemy[];
+  barrels: Barrel[];
   heldDir: () => Direction | null;
   walkable: WalkableFn;
-  attemptAttack: (attacker: Combatant, defender: Enemy, now: number) => void;
+  attemptAttack: (attacker: Combatant, defender: Defender, now: number) => void;
   updateHud: () => void;
 }
 
@@ -31,7 +32,8 @@ export function updatePlayer(player: Player, now: number, deps: PlayerController
     return;
   }
 
-  if (player.attackTarget && deps.enemies.includes(player.attackTarget) && player.attackTarget.health.hp > 0) {
+  const targetStillValid = !!player.attackTarget && (deps.enemies.includes(player.attackTarget as Enemy) || deps.barrels.includes(player.attackTarget as Barrel));
+  if (player.attackTarget && targetStillValid && player.attackTarget.health.hp > 0) {
     const t = player.attackTarget;
     const footprint = actorFootprint(t);
     let nearest: { x: number; y: number; d: number } | null = null;

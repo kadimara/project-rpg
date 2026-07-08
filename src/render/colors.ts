@@ -19,3 +19,5 @@ export const TREE_CANOPY_FILL = '#3f7d43';
 export const TREE_CANOPY_EDGE = '#2b5a2e';
 export const TREE_TRUNK_FILL = '#7a5636';
 export const TREE_TRUNK_EDGE = '#54391f';
+export const BARREL_COLOR = '#a67c3d';
+export const BARREL_EDGE = '#6e502a';

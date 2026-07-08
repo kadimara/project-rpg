@@ -6,6 +6,7 @@ import { updateEnemies, resolveTelegraphs } from './systems/enemyAI.ts';
 import { updatePlayer } from './systems/playerController.ts';
 import { createPlayer } from './entities/player.ts';
 import { createEnemies, createBoss, enemyAtTile } from './entities/enemies.ts';
+import { createBarrels, barrelAtTile } from './entities/barrels.ts';
 import { createKeyboardState } from './input/keyboard.ts';
 import { createHoverTracker, createClickHandler } from './input/mouse.ts';
 import { getClampedCamX, getClampedCamY } from './render/camera.ts';
@@ -27,11 +28,12 @@ const player = createPlayer(SPAWN_X, SPAWN_Y);
 const enemies = createEnemies();
 const boss = createBoss();
 enemies.push(boss);
+const barrels = createBarrels();
 const combatState = createCombatState();
 
 const legacy = initLegacyPanels({ player, map });
 
-const combat = createCombatSystem(combatState, enemies, player, {
+const combat = createCombatSystem(combatState, enemies, barrels, player, {
   updateHud: legacy.updateHud,
 });
 
@@ -40,6 +42,7 @@ const walkability = createWalkabilityPredicates({
   trees,
   player,
   enemies,
+  barrels,
 });
 
 const keyboard = createKeyboardState(() => {
@@ -56,6 +59,7 @@ const hover = createHoverTracker(canvas, getCamera);
 createClickHandler(canvas, {
   player,
   enemyAtTile: (x, y) => enemyAtTile(enemies, x, y),
+  barrelAtTile: (x, y) => barrelAtTile(barrels, x, y),
   walkable: walkability.walkable,
   getCamera,
 });
@@ -63,6 +67,7 @@ createClickHandler(canvas, {
 function tick(now: number): void {
   updatePlayer(player, now, {
     enemies,
+    barrels,
     heldDir: keyboard.heldDir,
     walkable: walkability.walkable,
     attemptAttack: combat.attemptAttack,
@@ -83,12 +88,13 @@ function tick(now: number): void {
     trees,
     player,
     enemies,
+    barrels,
     state: combatState,
     hoveredTile: hover.hoveredTile,
   });
 
   if (legacy.isMapOpen()) {
-    renderWorldMap(worldCtx, { map, trees, enemies, player });
+    renderWorldMap(worldCtx, { map, trees, enemies, barrels, player });
   }
 
   requestAnimationFrame(tick);
