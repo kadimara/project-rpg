@@ -1,60 +1,116 @@
-import './style.css'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import { setupCounter } from './counter.ts'
+import './style.css';
+import { SPAWN_X, SPAWN_Y, buildMap, buildTrees } from './systems/world.ts';
+import { createWalkabilityPredicates } from './systems/walkability.ts';
+import { createCombatState, createCombatSystem } from './systems/combat.ts';
+import { updateEnemies, resolveTelegraphs, resolveProjectiles } from './systems/enemyAI.ts';
+import { updatePlayer } from './systems/playerController.ts';
+import { createPlayer } from './entities/player.ts';
+import { createEnemies, createBoss, enemyAtTile } from './entities/enemies.ts';
+import { createKeyboardState } from './input/keyboard.ts';
+import { createHoverTracker, createClickHandler } from './input/mouse.ts';
+import { getClampedCamX, getClampedCamY } from './render/camera.ts';
+import { renderScene } from './render/scene.ts';
+import { renderWorldMap } from './render/worldmap.ts';
+import { initLegacyPanels } from './ui/legacy-panels.ts';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+const canvas = document.getElementById('game') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+ctx.imageSmoothingEnabled = false;
 
-<div class="ticks"></div>
+const worldCanvas = document.getElementById('worldmap-canvas') as HTMLCanvasElement;
+const worldCtx = worldCanvas.getContext('2d')!;
+worldCtx.imageSmoothingEnabled = false;
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+const map = buildMap();
+const trees = buildTrees();
+const player = createPlayer(SPAWN_X, SPAWN_Y);
+const enemies = createEnemies();
+const boss = createBoss();
+enemies.push(boss);
+const combatState = createCombatState();
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+const legacy = initLegacyPanels({ player, map, combatState });
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const combat = createCombatSystem(combatState, enemies, player, {
+  spawnGroundItem: legacy.spawnGroundItem,
+  onBossDefeated: legacy.setBossDefeated,
+  updateHud: legacy.updateHud,
+});
+
+const walkability = createWalkabilityPredicates({
+  map,
+  trees,
+  player,
+  enemies,
+  isNpcAt: legacy.isNpcAt,
+});
+
+const keyboard = createKeyboardState(() => {
+  player.path = [];
+  player.attackTarget = null;
+  player.pickupTarget = null;
+  player.talkTarget = null;
+});
+
+function getCamera() {
+  return { camX: getClampedCamX(player.px), camY: getClampedCamY(player.py) };
+}
+
+const hover = createHoverTracker(canvas, getCamera);
+
+createClickHandler(canvas, {
+  player,
+  enemyAtTile: (x, y) => enemyAtTile(enemies, x, y),
+  npcAt: legacy.npcAt,
+  groundItemAt: legacy.groundItemAt,
+  tryPickupGroundItems: legacy.tryPickupGroundItems,
+  interactWithNpc: legacy.interactWithNpc,
+  walkable: walkability.walkable,
+  getCamera,
+});
+
+function tick(now: number): void {
+  updatePlayer(player, now, {
+    enemies,
+    heldDir: keyboard.heldDir,
+    walkable: walkability.walkable,
+    isPlayerRanged: legacy.isPlayerRanged,
+    getPlayerRange: legacy.getPlayerRange,
+    attemptAttack: combat.attemptAttack,
+    attemptRangedAttack: combat.attemptRangedAttack,
+    updateHud: legacy.updateHud,
+    tryPickupGroundItems: legacy.tryPickupGroundItems,
+    npcAt: legacy.npcAt,
+    interactWithNpc: legacy.interactWithNpc,
+  });
+
+  updateEnemies(enemies, player, combatState, now, {
+    enemyChaseWalkable: walkability.enemyChaseWalkable,
+    bossFootprintWalkable: walkability.bossFootprintWalkable,
+    attemptAttack: combat.attemptAttack,
+    updateHud: legacy.updateHud,
+  });
+
+  resolveTelegraphs(combatState, player, now, combat.dealDamageToPlayer);
+  resolveProjectiles(combatState, enemies, player, now, combat.applyDamage, legacy.updateHud);
+
+  renderScene(ctx, canvas, now, {
+    map,
+    trees,
+    player,
+    enemies,
+    npcs: legacy.npcs,
+    groundItems: legacy.groundItems,
+    state: combatState,
+    hoveredTile: hover.hoveredTile,
+    getNpcQuestMarker: legacy.getNpcQuestMarker,
+  });
+
+  if (legacy.isMapOpen()) {
+    renderWorldMap(worldCtx, { map, trees, groundItems: legacy.groundItems, npcs: legacy.npcs, enemies, player });
+  }
+
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
