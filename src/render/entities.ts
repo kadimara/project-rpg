@@ -1,16 +1,6 @@
 import { TILE } from '../systems/world.ts';
-import type { ActorBase } from '../types/entities.ts';
+import type { Health } from '../types/entities.ts';
 import { BOSS_COLOR, BOSS_EDGE, TREE_CANOPY_FILL, TREE_CANOPY_EDGE, TREE_TRUNK_FILL, TREE_TRUNK_EDGE } from './colors.ts';
-
-// npcs are drawn with the same square sprite as actors but don't carry combat
-// stats, so the entity shape drawSquareEntity needs is the subset of ActorBase
-// that's actually about presentation (flash flicker + hp bar), all optional.
-export interface Drawable {
-  hp?: number;
-  maxHp?: number;
-  flashUntil?: number;
-  hpBarUntil?: number;
-}
 
 export function drawHpBar(ctx: CanvasRenderingContext2D, sx: number, sy: number, ratio: number): void {
   const margin = Math.max(1, Math.round(TILE * 0.16));
@@ -34,7 +24,7 @@ export function drawSquareEntity(
   fill: string,
   edge: string,
   inset: number,
-  entity: Drawable,
+  health: Health | undefined,
   now: number,
   persistent: boolean,
 ): void {
@@ -44,14 +34,14 @@ export function drawSquareEntity(
   ctx.fillStyle = fill;
   ctx.fillRect(sx + inset, sy + inset, size, size);
 
-  if (entity.flashUntil && now < entity.flashUntil) {
+  if (health && now < health.flashUntil) {
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillRect(sx + inset, sy + inset, size, size);
   }
 
-  const showBar = (entity.hpBarUntil && now < entity.hpBarUntil) || (persistent && entity.hp !== undefined && entity.maxHp !== undefined && entity.hp < entity.maxHp);
+  const showBar = !!health && ((now < health.hpBarUntil) || (persistent && health.hp < health.maxHp));
   if (showBar) {
-    drawHpBar(ctx, sx, sy, Math.max(0, entity.hp ?? 0) / (entity.maxHp ?? 1));
+    drawHpBar(ctx, sx, sy, Math.max(0, health!.hp) / health!.maxHp);
   }
 }
 
@@ -70,7 +60,7 @@ export function drawBossHpBar(ctx: CanvasRenderingContext2D, sx: number, sy: num
   ctx.fillRect(bx, by, Math.max(0, w * ratio), h);
 }
 
-export function drawBossEntity(ctx: CanvasRenderingContext2D, sx: number, sy: number, entity: ActorBase, now: number): void {
+export function drawBossEntity(ctx: CanvasRenderingContext2D, sx: number, sy: number, health: Health, now: number): void {
   const inset = 6;
   const size = TILE * 2 - inset * 2;
   ctx.fillStyle = BOSS_EDGE;
@@ -78,14 +68,14 @@ export function drawBossEntity(ctx: CanvasRenderingContext2D, sx: number, sy: nu
   ctx.fillStyle = BOSS_COLOR;
   ctx.fillRect(sx + inset, sy + inset, size, size);
 
-  if (entity.flashUntil && now < entity.flashUntil) {
+  if (now < health.flashUntil) {
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillRect(sx + inset, sy + inset, size, size);
   }
 
-  const showBar = (entity.hpBarUntil && now < entity.hpBarUntil) || entity.hp < entity.maxHp;
+  const showBar = now < health.hpBarUntil || health.hp < health.maxHp;
   if (showBar) {
-    drawBossHpBar(ctx, sx, sy, Math.max(0, entity.hp) / entity.maxHp);
+    drawBossHpBar(ctx, sx, sy, Math.max(0, health.hp) / health.maxHp);
   }
 }
 

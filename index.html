@@ -40,40 +40,13 @@
               <span class="stat-label">Target</span>
               <span class="stat-value" id="stat-target">none</span>
             </div>
-            <div class="stat">
-              <span class="stat-label">Gold</span>
-              <span class="stat-value" id="stat-gold">0</span>
-            </div>
-            <button id="inv-toggle-btn" class="inv-toggle-btn">Inventory <span class="key">I</span></button>
-            <button id="map-toggle-btn" class="inv-toggle-btn">Map <span class="key">M</span></button>
-          </div>
-          <div class="bottom-overlay-stack">
-            <div class="shop-panel" id="shop-panel">
-              <div class="shop-title" id="shop-title">Trader Mira's Wares</div>
-              <div class="shop-row" id="shop-buy-row"></div>
-              <div class="inv-desc" id="shop-hint">Click your inventory below to sell an item.</div>
-              <button class="dialogue-close" id="shop-close">Close shop</button>
-            </div>
-            <div class="inventory-panel" id="inventory-panel">
-              <div class="inv-row">
-                <div class="equip-slot" id="equip-weapon"><span class="equip-label">Weapon</span></div>
-                <div class="equip-slot" id="equip-armor"><span class="equip-label">Armor</span></div>
-                <div class="inv-divider"></div>
-                <div class="inv-grid" id="inv-grid"></div>
-              </div>
-              <div class="inv-desc" id="inv-desc">Click a potion to drink it, or a weapon/armor piece to equip it.</div>
-            </div>
-          </div>
-          <div class="dialogue-panel" id="dialogue-panel">
-            <div class="dialogue-name" id="dialogue-name">NPC</div>
-            <div class="dialogue-text" id="dialogue-text"></div>
-            <button class="dialogue-close" id="dialogue-close">Close</button>
+            <button id="map-toggle-btn" class="toggle-btn">Map <span class="key">M</span></button>
           </div>
           <div class="world-map-overlay" id="world-map-overlay">
             <div class="world-map-panel">
-              <div class="shop-title">World map</div>
+              <div class="world-map-title">World map</div>
               <canvas id="worldmap-canvas" width="192" height="144" style="width:576px;height:432px;"></canvas>
-              <button class="dialogue-close" id="world-map-close">Close</button>
+              <button class="world-map-close-btn" id="world-map-close">Close</button>
             </div>
           </div>
         </div>
@@ -81,8 +54,6 @@
 
       <div class="legend">
         <span class="legend-item"><span class="swatch" style="background:#3b6bd6;"></span>you</span>
-        <span class="legend-item"><span class="swatch" style="background:#e0c34a;"></span>villager</span>
-        <span class="legend-item"><span class="swatch" style="background:#8a5fc2;"></span>merchant</span>
         <span class="legend-item"><span class="swatch" style="background:#d63b3b;"></span>enemy</span>
         <span class="legend-item"><span class="swatch" style="background:#7a1e3d;"></span>boss</span>
         <span class="legend-item"><span class="swatch" style="background:#7a7a82;"></span>obstacle</span>
@@ -91,13 +62,9 @@
       <p class="hint">
         <span class="key">click / tap</span> ground to walk there &nbsp;&middot;&nbsp;
         <span class="key">click / tap</span> an enemy to attack it &nbsp;&middot;&nbsp;
-        <span class="key">click / tap</span> the villager to talk &nbsp;&middot;&nbsp;
-        <span class="key">click / tap</span> the merchant to trade &nbsp;&middot;&nbsp;
         <span class="key">WASD</span> / arrows also work &nbsp;&middot;&nbsp;
         attacked enemies chase you until you kill them or they knock you out &nbsp;&middot;&nbsp;
         watch for the red ground marker — that's the boss's projectile about to land &nbsp;&middot;&nbsp;
-        click a dropped item to walk over and collect it &nbsp;&middot;&nbsp;
-        <span class="key">Q</span> quaffs your first potion &nbsp;&middot;&nbsp;
         <span class="key">M</span> opens the world map
       </p>
     </div>

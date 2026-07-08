@@ -2,7 +2,7 @@ import './style.css';
 import { SPAWN_X, SPAWN_Y, buildMap, buildTrees } from './systems/world.ts';
 import { createWalkabilityPredicates } from './systems/walkability.ts';
 import { createCombatState, createCombatSystem } from './systems/combat.ts';
-import { updateEnemies, resolveTelegraphs, resolveProjectiles } from './systems/enemyAI.ts';
+import { updateEnemies, resolveTelegraphs } from './systems/enemyAI.ts';
 import { updatePlayer } from './systems/playerController.ts';
 import { createPlayer } from './entities/player.ts';
 import { createEnemies, createBoss, enemyAtTile } from './entities/enemies.ts';
@@ -29,11 +29,9 @@ const boss = createBoss();
 enemies.push(boss);
 const combatState = createCombatState();
 
-const legacy = initLegacyPanels({ player, map, combatState });
+const legacy = initLegacyPanels({ player, map });
 
 const combat = createCombatSystem(combatState, enemies, player, {
-  spawnGroundItem: legacy.spawnGroundItem,
-  onBossDefeated: legacy.setBossDefeated,
   updateHud: legacy.updateHud,
 });
 
@@ -42,18 +40,15 @@ const walkability = createWalkabilityPredicates({
   trees,
   player,
   enemies,
-  isNpcAt: legacy.isNpcAt,
 });
 
 const keyboard = createKeyboardState(() => {
-  player.path = [];
+  player.movement.path = [];
   player.attackTarget = null;
-  player.pickupTarget = null;
-  player.talkTarget = null;
 });
 
 function getCamera() {
-  return { camX: getClampedCamX(player.px), camY: getClampedCamY(player.py) };
+  return { camX: getClampedCamX(player.position.px), camY: getClampedCamY(player.position.py) };
 }
 
 const hover = createHoverTracker(canvas, getCamera);
@@ -61,10 +56,6 @@ const hover = createHoverTracker(canvas, getCamera);
 createClickHandler(canvas, {
   player,
   enemyAtTile: (x, y) => enemyAtTile(enemies, x, y),
-  npcAt: legacy.npcAt,
-  groundItemAt: legacy.groundItemAt,
-  tryPickupGroundItems: legacy.tryPickupGroundItems,
-  interactWithNpc: legacy.interactWithNpc,
   walkable: walkability.walkable,
   getCamera,
 });
@@ -74,14 +65,8 @@ function tick(now: number): void {
     enemies,
     heldDir: keyboard.heldDir,
     walkable: walkability.walkable,
-    isPlayerRanged: legacy.isPlayerRanged,
-    getPlayerRange: legacy.getPlayerRange,
     attemptAttack: combat.attemptAttack,
-    attemptRangedAttack: combat.attemptRangedAttack,
     updateHud: legacy.updateHud,
-    tryPickupGroundItems: legacy.tryPickupGroundItems,
-    npcAt: legacy.npcAt,
-    interactWithNpc: legacy.interactWithNpc,
   });
 
   updateEnemies(enemies, player, combatState, now, {
@@ -92,22 +77,18 @@ function tick(now: number): void {
   });
 
   resolveTelegraphs(combatState, player, now, combat.dealDamageToPlayer);
-  resolveProjectiles(combatState, enemies, player, now, combat.applyDamage, legacy.updateHud);
 
   renderScene(ctx, canvas, now, {
     map,
     trees,
     player,
     enemies,
-    npcs: legacy.npcs,
-    groundItems: legacy.groundItems,
     state: combatState,
     hoveredTile: hover.hoveredTile,
-    getNpcQuestMarker: legacy.getNpcQuestMarker,
   });
 
   if (legacy.isMapOpen()) {
-    renderWorldMap(worldCtx, { map, trees, groundItems: legacy.groundItems, npcs: legacy.npcs, enemies, player });
+    renderWorldMap(worldCtx, { map, trees, enemies, player });
   }
 
   requestAnimationFrame(tick);

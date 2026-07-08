@@ -2,11 +2,14 @@ import type { Direction, TileCoord } from './world.ts';
 
 export type Footprint = TileCoord[];
 
-export interface ActorBase {
+export interface Position {
   tileX: number;
   tileY: number;
   px: number;
   py: number;
+}
+
+export interface Movement {
   dir: Direction;
   moving: boolean;
   moveStart: number;
@@ -16,16 +19,26 @@ export interface ActorBase {
   toX: number;
   toY: number;
   path: TileCoord[];
+}
+
+export interface Health {
   hp: number;
   maxHp: number;
-  atkDamage: number;
-  atkCooldown: number;
-  lastAttack: number;
   flashUntil: number;
   hpBarUntil: number;
 }
 
-export interface Enemy extends ActorBase {
+export interface Combat {
+  atkDamage: number;
+  atkCooldown: number;
+  lastAttack: number;
+}
+
+export interface Enemy {
+  position: Position;
+  movement: Movement;
+  health: Health;
+  combat: Combat;
   size: 1 | 2;
   aggro: boolean;
   isBoss?: boolean;
@@ -35,8 +48,13 @@ export interface Enemy extends ActorBase {
   specialDamage?: number;
 }
 
-export interface Player extends ActorBase {
+export interface Player {
+  position: Position;
+  movement: Movement;
+  health: Health;
+  combat: Combat;
   attackTarget: Enemy | null;
-  pickupTarget: TileCoord | null;
-  talkTarget: TileCoord | null;
 }
+
+// either side of an attack - the only two entity kinds with Health + Combat
+export type Combatant = Player | Enemy;

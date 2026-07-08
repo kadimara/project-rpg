@@ -1,5 +1,3 @@
-import type { Enemy } from './entities.ts';
-
 export interface Telegraph {
   x: number;
   y: number;
@@ -7,15 +5,6 @@ export interface Telegraph {
   fromY?: number;
   bornTime: number;
   impactTime: number;
-  dmg: number;
-}
-
-export interface PlayerProjectile {
-  fromX: number;
-  fromY: number;
-  target: Enemy;
-  bornTime: number;
-  arriveTime: number;
   dmg: number;
 }
 
@@ -29,7 +18,6 @@ export interface FloatingText {
 
 export interface CombatState {
   telegraphs: Telegraph[];
-  playerProjectiles: PlayerProjectile[];
   floatingTexts: FloatingText[];
   respawnMessageUntil: number;
 }

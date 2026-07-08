@@ -1,27 +1,32 @@
 import { TILE } from '../systems/world.ts';
-import type { ActorBase } from '../types/entities.ts';
+import type { Position, Movement } from '../types/entities.ts';
 import type { Direction } from '../types/world.ts';
 
-export function startStep(actor: ActorBase, nx: number, ny: number, dir: Direction, now: number): void {
-  actor.dir = dir;
-  actor.fromX = actor.tileX;
-  actor.fromY = actor.tileY;
-  actor.toX = nx;
-  actor.toY = ny;
-  actor.tileX = nx;
-  actor.tileY = ny;
-  actor.moving = true;
-  actor.moveStart = now;
+export interface Mover {
+  position: Position;
+  movement: Movement;
 }
 
-export function updateActorAnimation(actor: ActorBase, now: number): void {
-  if (!actor.moving) return;
-  const t = Math.min(1, (now - actor.moveStart) / actor.moveDur);
-  actor.px = (actor.fromX + (actor.toX - actor.fromX) * t) * TILE;
-  actor.py = (actor.fromY + (actor.toY - actor.fromY) * t) * TILE;
+export function startStep(actor: Mover, nx: number, ny: number, dir: Direction, now: number): void {
+  actor.movement.dir = dir;
+  actor.movement.fromX = actor.position.tileX;
+  actor.movement.fromY = actor.position.tileY;
+  actor.movement.toX = nx;
+  actor.movement.toY = ny;
+  actor.position.tileX = nx;
+  actor.position.tileY = ny;
+  actor.movement.moving = true;
+  actor.movement.moveStart = now;
+}
+
+export function updateActorAnimation(actor: Mover, now: number): void {
+  if (!actor.movement.moving) return;
+  const t = Math.min(1, (now - actor.movement.moveStart) / actor.movement.moveDur);
+  actor.position.px = (actor.movement.fromX + (actor.movement.toX - actor.movement.fromX) * t) * TILE;
+  actor.position.py = (actor.movement.fromY + (actor.movement.toY - actor.movement.fromY) * t) * TILE;
   if (t >= 1) {
-    actor.moving = false;
-    actor.px = actor.toX * TILE;
-    actor.py = actor.toY * TILE;
+    actor.movement.moving = false;
+    actor.position.px = actor.movement.toX * TILE;
+    actor.position.py = actor.movement.toY * TILE;
   }
 }

@@ -1,11 +1,8 @@
 import { TILE } from '../systems/world.ts';
 import type { TileCoord } from '../types/world.ts';
 import type { Player, Enemy } from '../types/entities.ts';
-import type { Npc } from '../types/npc.ts';
-import type { GroundItem } from '../types/items.ts';
-import { findPath, bfsChase } from '../systems/pathfinding.ts';
+import { findPath } from '../systems/pathfinding.ts';
 import type { WalkableFn } from '../systems/pathfinding.ts';
-import { tileAdjacentToFootprint } from '../entities/footprint.ts';
 
 export function screenToTile(canvas: HTMLCanvasElement, camX: number, camY: number, clientX: number, clientY: number): TileCoord {
   const rect = canvas.getBoundingClientRect();
@@ -43,17 +40,12 @@ export function createHoverTracker(canvas: HTMLCanvasElement, getCamera: () => {
 export interface ClickHandlerDeps {
   player: Player;
   enemyAtTile: (x: number, y: number) => Enemy | undefined;
-  npcAt: (x: number, y: number) => Npc | undefined;
-  groundItemAt: (x: number, y: number) => GroundItem | undefined;
-  tryPickupGroundItems: (x: number, y: number) => void;
-  interactWithNpc: (npc: Npc) => void;
   walkable: WalkableFn;
   getCamera: () => { camX: number; camY: number };
 }
 
 // resolves a canvas click into whichever action applies: attack a clicked enemy,
-// approach+talk to a clicked npc, walk to and collect a clicked ground item, or
-// just walk to the clicked tile
+// or just walk to the clicked tile
 export function createClickHandler(canvas: HTMLCanvasElement, deps: ClickHandlerDeps): void {
   canvas.addEventListener('click', (e) => {
     const { camX, camY } = deps.getCamera();
@@ -63,54 +55,14 @@ export function createClickHandler(canvas: HTMLCanvasElement, deps: ClickHandler
     const target = deps.enemyAtTile(x, y);
     if (target) {
       player.attackTarget = target;
-      player.pickupTarget = null;
-      player.talkTarget = null;
-      player.path = [];
+      player.movement.path = [];
       return;
     }
 
-    const clickedNpc = deps.npcAt(x, y);
-    if (clickedNpc) {
-      player.attackTarget = null;
-      player.pickupTarget = null;
-      if (tileAdjacentToFootprint(player.tileX, player.tileY, [{ x, y }])) {
-        player.talkTarget = null;
-        player.path = [];
-        deps.interactWithNpc(clickedNpc);
-      } else {
-        const path = bfsChase(deps.walkable, player.tileX, player.tileY, (px, py) => tileAdjacentToFootprint(px, py, [{ x, y }]));
-        if (path.length) {
-          player.talkTarget = { x, y };
-          player.path = path;
-        }
-      }
-      return;
-    }
-
-    const item = deps.groundItemAt(x, y);
-    if (item) {
-      player.attackTarget = null;
-      player.talkTarget = null;
-      if (player.tileX === x && player.tileY === y) {
-        deps.tryPickupGroundItems(x, y);
-        player.pickupTarget = null;
-        player.path = [];
-      } else {
-        const path = findPath(deps.walkable, player.tileX, player.tileY, x, y);
-        if (path.length) {
-          player.pickupTarget = { x, y };
-          player.path = path;
-        }
-      }
-      return;
-    }
-
-    const path = findPath(deps.walkable, player.tileX, player.tileY, x, y);
+    const path = findPath(deps.walkable, player.position.tileX, player.position.tileY, x, y);
     if (path.length) {
       player.attackTarget = null;
-      player.pickupTarget = null;
-      player.talkTarget = null;
-      player.path = path;
+      player.movement.path = path;
     }
   });
 }

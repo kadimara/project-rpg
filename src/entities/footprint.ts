@@ -1,15 +1,16 @@
-import type { Enemy, Footprint } from '../types/entities.ts';
+import type { Footprint, Position } from '../types/entities.ts';
 
-export function actorFootprint(e: Pick<Enemy, 'tileX' | 'tileY' | 'size'>): Footprint {
+export function actorFootprint(e: { position: Pick<Position, 'tileX' | 'tileY'>; size: 1 | 2 }): Footprint {
+  const { tileX, tileY } = e.position;
   if (e.size === 2) {
     return [
-      { x: e.tileX, y: e.tileY },
-      { x: e.tileX + 1, y: e.tileY },
-      { x: e.tileX, y: e.tileY + 1 },
-      { x: e.tileX + 1, y: e.tileY + 1 },
+      { x: tileX, y: tileY },
+      { x: tileX + 1, y: tileY },
+      { x: tileX, y: tileY + 1 },
+      { x: tileX + 1, y: tileY + 1 },
     ];
   }
-  return [{ x: e.tileX, y: e.tileY }];
+  return [{ x: tileX, y: tileY }];
 }
 
 export function footprintAt(x: number, y: number, size: 1 | 2): Footprint {
