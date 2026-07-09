@@ -4,7 +4,13 @@ export type WalkableFn = (x: number, y: number) => boolean;
 export type GoalFn = (x: number, y: number) => boolean;
 
 // exact-tile BFS, for ground clicks
-export function findPath(walkable: WalkableFn, startX: number, startY: number, goalX: number, goalY: number): TileCoord[] {
+export function findPath(
+  walkable: WalkableFn,
+  startX: number,
+  startY: number,
+  goalX: number,
+  goalY: number,
+): TileCoord[] {
   if (!walkable(goalX, goalY)) return [];
   if (startX === goalX && startY === goalY) return [];
   const key = (x: number, y: number) => x + ',' + y;
@@ -12,7 +18,12 @@ export function findPath(walkable: WalkableFn, startX: number, startY: number, g
   const cameFrom = new Map<string, TileCoord>();
   const queue: TileCoord[] = [{ x: startX, y: startY }];
   let head = 0;
-  const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
   while (head < queue.length) {
     const cur = queue[head++];
     if (cur.x === goalX && cur.y === goalY) break;
@@ -41,14 +52,24 @@ export function findPath(walkable: WalkableFn, startX: number, startY: number, g
 }
 
 // BFS to nearest tile adjacent to a moving target, for combat chasing
-export function bfsChase(walkable: WalkableFn, startX: number, startY: number, isGoal: GoalFn): TileCoord[] {
+export function bfsChase(
+  walkable: WalkableFn,
+  startX: number,
+  startY: number,
+  isGoal: GoalFn,
+): TileCoord[] {
   if (isGoal(startX, startY)) return [];
   const key = (x: number, y: number) => x + ',' + y;
   const visited = new Set([key(startX, startY)]);
   const cameFrom = new Map<string, TileCoord>();
   const queue: TileCoord[] = [{ x: startX, y: startY }];
   let head = 0;
-  const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
   let goalNode: TileCoord | null = null;
   while (head < queue.length && !goalNode) {
     const cur = queue[head++];
@@ -79,13 +100,23 @@ export function bfsChase(walkable: WalkableFn, startX: number, startY: number, i
   return path;
 }
 
-export function dirBetween(fromX: number, fromY: number, toX: number, toY: number): Direction {
+export function dirBetween(
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+): Direction {
   if (toX > fromX) return 'right';
   if (toX < fromX) return 'left';
   if (toY > fromY) return 'down';
   return 'up';
 }
 
-export function tileDist(ax: number, ay: number, bx: number, by: number): number {
+export function tileDist(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): number {
   return Math.abs(ax - bx) + Math.abs(ay - by);
 }

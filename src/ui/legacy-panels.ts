@@ -25,15 +25,24 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
   function updateHud(): void {
     statHp.textContent = player.health.hp + ' / ' + player.health.maxHp;
     statPos.textContent = player.position.tileX + ', ' + player.position.tileY;
-    statTile.textContent = TILE_NAMES[map[player.position.tileY][player.position.tileX]];
+    statTile.textContent =
+      TILE_NAMES[map[player.position.tileY][player.position.tileX]];
     statFacing.textContent = player.movement.dir;
     statTarget.textContent = player.attackTarget
-      ? ('isBoss' in player.attackTarget ? (player.attackTarget.isBoss ? 'boss (' : 'enemy (') : 'barrel (') + Math.max(0, player.attackTarget.health.hp) + ' hp)'
+      ? ('isBoss' in player.attackTarget
+          ? player.attackTarget.isBoss
+            ? 'boss ('
+            : 'enemy ('
+          : 'barrel (') +
+        Math.max(0, player.attackTarget.health.hp) +
+        ' hp)'
       : 'none';
   }
 
   // ---- world map toggle ----
-  const worldMapOverlay = document.getElementById('world-map-overlay')! as HTMLElement;
+  const worldMapOverlay = document.getElementById(
+    'world-map-overlay',
+  )! as HTMLElement;
   const worldMapCloseBtn = document.getElementById('world-map-close')!;
   const mapToggleBtn = document.getElementById('map-toggle-btn')!;
   let mapOpen = false;

@@ -1,6 +1,9 @@
 import type { Footprint, Position } from '../types/entities.ts';
 
-export function actorFootprint(e: { position: Pick<Position, 'tileX' | 'tileY'>; size: 1 | 2 }): Footprint {
+export function actorFootprint(e: {
+  position: Pick<Position, 'tileX' | 'tileY'>;
+  size: 1 | 2;
+}): Footprint {
   const { tileX, tileY } = e.position;
   if (e.size === 2) {
     return [
@@ -25,6 +28,10 @@ export function footprintAt(x: number, y: number, size: 1 | 2): Footprint {
   return [{ x, y }];
 }
 
-export function tileAdjacentToFootprint(px: number, py: number, footprint: Footprint): boolean {
+export function tileAdjacentToFootprint(
+  px: number,
+  py: number,
+  footprint: Footprint,
+): boolean {
   return footprint.some((t) => Math.abs(px - t.x) + Math.abs(py - t.y) === 1);
 }

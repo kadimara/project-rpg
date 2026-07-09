@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <title>project-rpg</title>
   </head>
   <body>
@@ -17,7 +20,12 @@
       <div class="window-frame">
         <div class="canvas-stage">
           <div class="viewport-wrap">
-            <canvas id="game" width="208" height="144" style="width:832px;height:576px;"></canvas>
+            <canvas
+              id="game"
+              width="208"
+              height="144"
+              style="width: 832px; height: 576px"
+            ></canvas>
           </div>
           <div class="statusbar">
             <div class="stat">
@@ -40,31 +48,50 @@
               <span class="stat-label">Target</span>
               <span class="stat-value" id="stat-target">none</span>
             </div>
-            <button id="map-toggle-btn" class="toggle-btn">Map <span class="key">M</span></button>
+            <button id="map-toggle-btn" class="toggle-btn">
+              Map <span class="key">M</span>
+            </button>
           </div>
           <div class="world-map-overlay" id="world-map-overlay">
             <div class="world-map-panel">
               <div class="world-map-title">World map</div>
-              <canvas id="worldmap-canvas" width="192" height="144" style="width:576px;height:432px;"></canvas>
-              <button class="world-map-close-btn" id="world-map-close">Close</button>
+              <canvas
+                id="worldmap-canvas"
+                width="192"
+                height="144"
+                style="width: 576px; height: 432px"
+              ></canvas>
+              <button class="world-map-close-btn" id="world-map-close">
+                Close
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <div class="legend">
-        <span class="legend-item"><span class="swatch" style="background:#3b6bd6;"></span>you</span>
-        <span class="legend-item"><span class="swatch" style="background:#d63b3b;"></span>enemy</span>
-        <span class="legend-item"><span class="swatch" style="background:#7a1e3d;"></span>boss</span>
-        <span class="legend-item"><span class="swatch" style="background:#7a7a82;"></span>obstacle</span>
+        <span class="legend-item"
+          ><span class="swatch" style="background: #3b6bd6"></span>you</span
+        >
+        <span class="legend-item"
+          ><span class="swatch" style="background: #d63b3b"></span>enemy</span
+        >
+        <span class="legend-item"
+          ><span class="swatch" style="background: #7a1e3d"></span>boss</span
+        >
+        <span class="legend-item"
+          ><span class="swatch" style="background: #7a7a82"></span
+          >obstacle</span
+        >
       </div>
 
       <p class="hint">
-        <span class="key">click / tap</span> ground to walk there &nbsp;&middot;&nbsp;
-        <span class="key">click / tap</span> an enemy to attack it &nbsp;&middot;&nbsp;
-        <span class="key">WASD</span> / arrows also work &nbsp;&middot;&nbsp;
-        attacked enemies chase you until you kill them or they knock you out &nbsp;&middot;&nbsp;
-        watch for the red ground marker — that's the boss's projectile about to land &nbsp;&middot;&nbsp;
+        <span class="key">click / tap</span> ground to walk there
+        &nbsp;&middot;&nbsp; <span class="key">click / tap</span> an enemy to
+        attack it &nbsp;&middot;&nbsp; <span class="key">WASD</span> / arrows
+        also work &nbsp;&middot;&nbsp; attacked enemies chase you until you kill
+        them or they knock you out &nbsp;&middot;&nbsp; watch for the red ground
+        marker — that's the boss's projectile about to land &nbsp;&middot;&nbsp;
         <span class="key">M</span> opens the world map
       </p>
     </div>

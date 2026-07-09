@@ -7,7 +7,13 @@ export interface Mover {
   movement: Movement;
 }
 
-export function startStep(actor: Mover, nx: number, ny: number, dir: Direction, now: number): void {
+export function startStep(
+  actor: Mover,
+  nx: number,
+  ny: number,
+  dir: Direction,
+  now: number,
+): void {
   actor.movement.dir = dir;
   actor.movement.fromX = actor.position.tileX;
   actor.movement.fromY = actor.position.tileY;
@@ -21,9 +27,16 @@ export function startStep(actor: Mover, nx: number, ny: number, dir: Direction, 
 
 export function updateActorAnimation(actor: Mover, now: number): void {
   if (!actor.movement.moving) return;
-  const t = Math.min(1, (now - actor.movement.moveStart) / actor.movement.moveDur);
-  actor.position.px = (actor.movement.fromX + (actor.movement.toX - actor.movement.fromX) * t) * TILE;
-  actor.position.py = (actor.movement.fromY + (actor.movement.toY - actor.movement.fromY) * t) * TILE;
+  const t = Math.min(
+    1,
+    (now - actor.movement.moveStart) / actor.movement.moveDur,
+  );
+  actor.position.px =
+    (actor.movement.fromX + (actor.movement.toX - actor.movement.fromX) * t) *
+    TILE;
+  actor.position.py =
+    (actor.movement.fromY + (actor.movement.toY - actor.movement.fromY) * t) *
+    TILE;
   if (t >= 1) {
     actor.movement.moving = false;
     actor.position.px = actor.movement.toX * TILE;

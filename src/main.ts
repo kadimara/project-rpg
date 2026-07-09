@@ -1,7 +1,12 @@
 import './style.css';
 import { SPAWN_X, SPAWN_Y, buildMap, buildTrees } from './systems/world.ts';
 import { createWalkabilityPredicates } from './systems/walkability.ts';
-import { createCombatState, createCombatSystem } from './systems/combat.ts';
+import {
+  createCombatState,
+  attemptAttack,
+  dealDamageToPlayer,
+  type CombatContext,
+} from './systems/combat.ts';
 import { updateEnemies, resolveTelegraphs } from './systems/enemyAI.ts';
 import { updatePlayer } from './systems/playerController.ts';
 import { createPlayer } from './entities/player.ts';
@@ -18,7 +23,9 @@ const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 ctx.imageSmoothingEnabled = false;
 
-const worldCanvas = document.getElementById('worldmap-canvas') as HTMLCanvasElement;
+const worldCanvas = document.getElementById(
+  'worldmap-canvas',
+) as HTMLCanvasElement;
 const worldCtx = worldCanvas.getContext('2d')!;
 worldCtx.imageSmoothingEnabled = false;
 
@@ -33,9 +40,12 @@ const combatState = createCombatState();
 
 const legacy = initLegacyPanels({ player, map });
 
-const combat = createCombatSystem(combatState, enemies, barrels, player, {
-  updateHud: legacy.updateHud,
-});
+const combatCtx: CombatContext = {
+  state: combatState,
+  enemies,
+  barrels,
+  player,
+};
 
 const walkability = createWalkabilityPredicates({
   map,
@@ -51,7 +61,10 @@ const keyboard = createKeyboardState(() => {
 });
 
 function getCamera() {
-  return { camX: getClampedCamX(player.position.px), camY: getClampedCamY(player.position.py) };
+  return {
+    camX: getClampedCamX(player.position.px),
+    camY: getClampedCamY(player.position.py),
+  };
 }
 
 const hover = createHoverTracker(canvas, getCamera);
@@ -70,18 +83,22 @@ function tick(now: number): void {
     barrels,
     heldDir: keyboard.heldDir,
     walkable: walkability.walkable,
-    attemptAttack: combat.attemptAttack,
+    attemptAttack: (attacker, defender, t) =>
+      attemptAttack(combatCtx, attacker, defender, t),
     updateHud: legacy.updateHud,
   });
 
   updateEnemies(enemies, player, combatState, now, {
     enemyChaseWalkable: walkability.enemyChaseWalkable,
     bossFootprintWalkable: walkability.bossFootprintWalkable,
-    attemptAttack: combat.attemptAttack,
+    attemptAttack: (attacker, defender, t) =>
+      attemptAttack(combatCtx, attacker, defender, t),
     updateHud: legacy.updateHud,
   });
 
-  resolveTelegraphs(combatState, player, now, combat.dealDamageToPlayer);
+  resolveTelegraphs(combatState, player, now, (dmg, t) =>
+    dealDamageToPlayer(combatCtx, dmg, t, legacy.updateHud),
+  );
 
   renderScene(ctx, canvas, now, {
     map,

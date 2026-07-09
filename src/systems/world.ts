@@ -64,7 +64,20 @@ export function buildMap(): TileGrid {
 // trees are 1x2 props: {x,y} is the trunk (bottom) tile, which is the only
 // part that blocks movement. The canopy renders into the tile above it.
 export const TREE_SPOTS: Array<[number, number]> = [
-  [4, 4], [5, 4], [4, 10], [6, 12], [10, 3], [11, 3], [18, 10], [19, 12], [20, 7], [8, 14], [14, 14], [15, 14], [3, 8], [21, 4],
+  [4, 4],
+  [5, 4],
+  [4, 10],
+  [6, 12],
+  [10, 3],
+  [11, 3],
+  [18, 10],
+  [19, 12],
+  [20, 7],
+  [8, 14],
+  [14, 14],
+  [15, 14],
+  [3, 8],
+  [21, 4],
 ];
 
 export function buildTrees(): Tree[] {

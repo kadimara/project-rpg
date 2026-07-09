@@ -1,6 +1,19 @@
 import type { Direction } from '../types/world.ts';
 
-const MOVE_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
+const MOVE_KEYS = [
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'w',
+  'a',
+  's',
+  'd',
+  'W',
+  'A',
+  'S',
+  'D',
+];
 
 export interface KeyboardState {
   heldDir(): Direction | null;

@@ -8,8 +8,11 @@
   --parchment: #f0e6d2;
   --parchment-dim: #b8a98c;
 }
-* { box-sizing: border-box; }
-html, body {
+* {
+  box-sizing: border-box;
+}
+html,
+body {
   margin: 0;
   padding: 0;
   background: var(--void);
@@ -32,7 +35,9 @@ html, body {
   font-size: 15px;
   letter-spacing: 2px;
   color: var(--torch);
-  text-shadow: 0 0 8px rgba(255,180,84,0.5), 0 0 2px rgba(255,180,84,0.8);
+  text-shadow:
+    0 0 8px rgba(255, 180, 84, 0.5),
+    0 0 2px rgba(255, 180, 84, 0.8);
   margin: 0 0 6px;
   text-align: center;
 }
@@ -77,9 +82,21 @@ canvas#game {
   font-size: 10px;
   flex-wrap: nowrap;
 }
-.stat { display: flex; align-items: baseline; gap: 4px; }
-.stat-label { color: var(--parchment-dim); font-size: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
-.stat-value { color: var(--parchment); font-size: 10px; }
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.stat-label {
+  color: var(--parchment-dim);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.stat-value {
+  color: var(--parchment);
+  font-size: 10px;
+}
 
 .hint {
   margin-top: 16px;
@@ -108,8 +125,18 @@ canvas#game {
   flex-wrap: wrap;
   justify-content: center;
 }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; border: 1px solid rgba(0,0,0,0.4); }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
 
 .toggle-btn {
   background: var(--stone-mid);
@@ -124,9 +151,13 @@ canvas#game {
   align-items: center;
   gap: 4px;
 }
-.toggle-btn:hover { background: var(--stone-light); }
+.toggle-btn:hover {
+  background: var(--stone-light);
+}
 
-.canvas-stage { position: relative; }
+.canvas-stage {
+  position: relative;
+}
 
 .world-map-overlay {
   display: none;
@@ -146,7 +177,7 @@ canvas#game {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 #worldmap-canvas {
   image-rendering: pixelated;
@@ -171,4 +202,6 @@ canvas#game {
   padding: 5px 10px;
   cursor: pointer;
 }
-.world-map-close-btn:hover { background: var(--stone-light); }
+.world-map-close-btn:hover {
+  background: var(--stone-light);
+}

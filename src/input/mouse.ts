@@ -4,7 +4,13 @@ import type { Player, Enemy, Barrel } from '../types/entities.ts';
 import { findPath } from '../systems/pathfinding.ts';
 import type { WalkableFn } from '../systems/pathfinding.ts';
 
-export function screenToTile(canvas: HTMLCanvasElement, camX: number, camY: number, clientX: number, clientY: number): TileCoord {
+export function screenToTile(
+  canvas: HTMLCanvasElement,
+  camX: number,
+  camY: number,
+  clientX: number,
+  clientY: number,
+): TileCoord {
   const rect = canvas.getBoundingClientRect();
   const cssX = clientX - rect.left;
   const cssY = clientY - rect.top;
@@ -21,7 +27,10 @@ export interface HoverTracker {
   readonly hoveredTile: TileCoord | null;
 }
 
-export function createHoverTracker(canvas: HTMLCanvasElement, getCamera: () => { camX: number; camY: number }): HoverTracker {
+export function createHoverTracker(
+  canvas: HTMLCanvasElement,
+  getCamera: () => { camX: number; camY: number },
+): HoverTracker {
   let hoveredTile: TileCoord | null = null;
   canvas.addEventListener('mousemove', (e) => {
     const { camX, camY } = getCamera();
@@ -47,7 +56,10 @@ export interface ClickHandlerDeps {
 
 // resolves a canvas click into whichever action applies: attack a clicked enemy
 // or barrel, or just walk to the clicked tile
-export function createClickHandler(canvas: HTMLCanvasElement, deps: ClickHandlerDeps): void {
+export function createClickHandler(
+  canvas: HTMLCanvasElement,
+  deps: ClickHandlerDeps,
+): void {
   canvas.addEventListener('click', (e) => {
     const { camX, camY } = deps.getCamera();
     const { x, y } = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
@@ -60,7 +72,13 @@ export function createClickHandler(canvas: HTMLCanvasElement, deps: ClickHandler
       return;
     }
 
-    const path = findPath(deps.walkable, player.position.tileX, player.position.tileY, x, y);
+    const path = findPath(
+      deps.walkable,
+      player.position.tileX,
+      player.position.tileY,
+      x,
+      y,
+    );
     if (path.length) {
       player.attackTarget = null;
       player.movement.path = path;
