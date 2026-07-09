@@ -10,6 +10,8 @@ const ENEMY_SPAWNS: Array<[number, number]> = [
 
 export function createEnemies(): Enemy[] {
   return ENEMY_SPAWNS.map(([tileX, tileY]) => ({
+    id: crypto.randomUUID(),
+    kind: 'enemy',
     position: { tileX, tileY, px: tileX * TILE, py: tileY * TILE },
     movement: {
       dir: 'down',
@@ -31,6 +33,8 @@ export function createEnemies(): Enemy[] {
 
 export function createBoss(): Enemy {
   return {
+    id: crypto.randomUUID(),
+    kind: 'enemy',
     position: { tileX: 11, tileY: 9, px: 11 * TILE, py: 9 * TILE },
     movement: {
       dir: 'down',

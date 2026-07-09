@@ -1,16 +1,16 @@
 import type { TileGrid, Tree } from '../types/world.ts';
-import type { Player, Enemy, Barrel } from '../types/entities.ts';
+import type { Player, Enemy } from '../types/entities.ts';
 import { terrainWalkable, treeBlocksAt } from './world.ts';
 import { enemyAt } from '../entities/enemies.ts';
 import { barrelAt } from '../entities/barrels.ts';
 import { actorFootprint, footprintAt } from '../entities/footprint.ts';
+import { getBarrels, getEnemies, type EntityStore } from '../entities/store.ts';
 
 export interface WalkabilityDeps {
   map: TileGrid;
   trees: Tree[];
   player: Player;
-  enemies: Enemy[];
-  barrels: Barrel[];
+  store: EntityStore;
 }
 
 export interface WalkabilityPredicates {
@@ -25,25 +25,25 @@ export interface WalkabilityPredicates {
 export function createWalkabilityPredicates(
   deps: WalkabilityDeps,
 ): WalkabilityPredicates {
-  const { map, trees, player, enemies, barrels } = deps;
+  const { map, trees, player, store } = deps;
 
   function walkable(x: number, y: number): boolean {
     return (
       terrainWalkable(map, x, y) &&
-      !enemyAt(enemies, x, y) &&
+      !enemyAt(getEnemies(store), x, y) &&
       !treeBlocksAt(trees, x, y) &&
-      !barrelAt(barrels, x, y)
+      !barrelAt(getBarrels(store), x, y)
     );
   }
 
   function enemyChaseWalkable(x: number, y: number, self: Enemy): boolean {
     if (!terrainWalkable(map, x, y)) return false;
     if (treeBlocksAt(trees, x, y)) return false;
-    if (barrelAt(barrels, x, y)) return false;
+    if (barrelAt(getBarrels(store), x, y)) return false;
     if (x === player.position.tileX && y === player.position.tileY)
       return false;
     if (
-      enemies.some(
+      getEnemies(store).some(
         (e) =>
           e !== self && actorFootprint(e).some((t) => t.x === x && t.y === y),
       )
@@ -56,11 +56,11 @@ export function createWalkabilityPredicates(
     for (const t of footprintAt(x, y, 2)) {
       if (!terrainWalkable(map, t.x, t.y)) return false;
       if (treeBlocksAt(trees, t.x, t.y)) return false;
-      if (barrelAt(barrels, t.x, t.y)) return false;
+      if (barrelAt(getBarrels(store), t.x, t.y)) return false;
       if (t.x === player.position.tileX && t.y === player.position.tileY)
         return false;
       if (
-        enemies.some(
+        getEnemies(store).some(
           (e) =>
             e !== self &&
             actorFootprint(e).some((et) => et.x === t.x && et.y === t.y),

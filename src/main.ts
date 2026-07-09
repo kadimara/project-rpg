@@ -4,14 +4,16 @@ import { createWalkabilityPredicates } from './systems/walkability.ts';
 import {
   createCombatState,
   attemptAttack,
-  dealDamageToPlayer,
   type CombatContext,
+  applyDamage,
 } from './systems/combat.ts';
 import { updateEnemies, resolveTelegraphs } from './systems/enemyAI.ts';
 import { updatePlayer } from './systems/playerController.ts';
+import { handleEntityDeath } from './systems/death.ts';
 import { createPlayer } from './entities/player.ts';
 import { createEnemies, createBoss, enemyAtTile } from './entities/enemies.ts';
 import { createBarrels, barrelAtTile } from './entities/barrels.ts';
+import { createEntityStore, getBarrels, getEnemies } from './entities/store.ts';
 import { createKeyboardState } from './input/keyboard.ts';
 import { createHoverTracker, createClickHandler } from './input/mouse.ts';
 import { getClampedCamX, getClampedCamY } from './render/camera.ts';
@@ -33,26 +35,25 @@ const map = buildMap();
 const trees = buildTrees();
 const player = createPlayer(SPAWN_X, SPAWN_Y);
 const enemies = createEnemies();
-const boss = createBoss();
-enemies.push(boss);
+enemies.push(createBoss());
 const barrels = createBarrels();
+const store = createEntityStore(player, [...enemies, ...barrels]);
 const combatState = createCombatState();
 
 const legacy = initLegacyPanels({ player, map });
 
 const combatCtx: CombatContext = {
   state: combatState,
-  enemies,
-  barrels,
-  player,
+  store,
+  onDeath: (defender, now) =>
+    handleEntityDeath(store, combatState, defender, now),
 };
 
 const walkability = createWalkabilityPredicates({
   map,
   trees,
   player,
-  enemies,
-  barrels,
+  store,
 });
 
 const keyboard = createKeyboardState(() => {
@@ -71,16 +72,15 @@ const hover = createHoverTracker(canvas, getCamera);
 
 createClickHandler(canvas, {
   player,
-  enemyAtTile: (x, y) => enemyAtTile(enemies, x, y),
-  barrelAtTile: (x, y) => barrelAtTile(barrels, x, y),
+  enemyAtTile: (x, y) => enemyAtTile(getEnemies(store), x, y),
+  barrelAtTile: (x, y) => barrelAtTile(getBarrels(store), x, y),
   walkable: walkability.walkable,
   getCamera,
 });
 
 function tick(now: number): void {
   updatePlayer(player, now, {
-    enemies,
-    barrels,
+    store,
     heldDir: keyboard.heldDir,
     walkable: walkability.walkable,
     attemptAttack: (attacker, defender, t) =>
@@ -88,7 +88,7 @@ function tick(now: number): void {
     updateHud: legacy.updateHud,
   });
 
-  updateEnemies(enemies, player, combatState, now, {
+  updateEnemies(getEnemies(store), player, combatState, now, {
     enemyChaseWalkable: walkability.enemyChaseWalkable,
     bossFootprintWalkable: walkability.bossFootprintWalkable,
     attemptAttack: (attacker, defender, t) =>
@@ -97,21 +97,27 @@ function tick(now: number): void {
   });
 
   resolveTelegraphs(combatState, player, now, (dmg, t) =>
-    dealDamageToPlayer(combatCtx, dmg, t, legacy.updateHud),
+    applyDamage(combatCtx, player, dmg, t),
   );
 
   renderScene(ctx, canvas, now, {
     map,
     trees,
     player,
-    enemies,
-    barrels,
+    enemies: getEnemies(store),
+    barrels: getBarrels(store),
     state: combatState,
     hoveredTile: hover.hoveredTile,
   });
 
   if (legacy.isMapOpen()) {
-    renderWorldMap(worldCtx, { map, trees, enemies, barrels, player });
+    renderWorldMap(worldCtx, {
+      map,
+      trees,
+      enemies: getEnemies(store),
+      barrels: getBarrels(store),
+      player,
+    });
   }
 
   requestAnimationFrame(tick);

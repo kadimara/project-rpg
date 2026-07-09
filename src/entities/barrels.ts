@@ -9,6 +9,8 @@ const BARREL_SPAWNS: Array<[number, number]> = [
 
 export function createBarrels(): Barrel[] {
   return BARREL_SPAWNS.map(([tileX, tileY]) => ({
+    id: crypto.randomUUID(),
+    kind: 'barrel',
     position: { tileX, tileY, px: tileX * TILE, py: tileY * TILE },
     health: { hp: 3, maxHp: 3, flashUntil: 0, hpBarUntil: 0 },
     size: 1,

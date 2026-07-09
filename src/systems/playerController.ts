@@ -1,11 +1,5 @@
 import type { Direction } from '../types/world.ts';
-import type {
-  Barrel,
-  Combatant,
-  Defender,
-  Enemy,
-  Player,
-} from '../types/entities.ts';
+import type { Combatant, Defender, Player } from '../types/entities.ts';
 import { startStep, updateActorAnimation } from '../entities/actor.ts';
 import { tryMove } from '../entities/player.ts';
 import {
@@ -14,10 +8,10 @@ import {
 } from '../entities/footprint.ts';
 import { bfsChase, dirBetween } from './pathfinding.ts';
 import type { WalkableFn } from './pathfinding.ts';
+import type { EntityStore } from '../entities/store.ts';
 
 export interface PlayerControllerDeps {
-  enemies: Enemy[];
-  barrels: Barrel[];
+  store: EntityStore;
   heldDir: () => Direction | null;
   walkable: WalkableFn;
   attemptAttack: (attacker: Combatant, defender: Defender, now: number) => void;
@@ -46,9 +40,7 @@ export function updatePlayer(
   }
 
   const targetStillValid =
-    !!player.attackTarget &&
-    (deps.enemies.includes(player.attackTarget as Enemy) ||
-      deps.barrels.includes(player.attackTarget as Barrel));
+    !!player.attackTarget && deps.store.entities.has(player.attackTarget.id);
   if (
     player.attackTarget &&
     targetStillValid &&

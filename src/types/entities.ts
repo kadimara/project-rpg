@@ -34,7 +34,15 @@ export interface Combat {
   lastAttack: number;
 }
 
-export interface Enemy {
+export type EntityKind = 'player' | 'enemy' | 'barrel';
+
+export interface Entity {
+  id: string;
+  kind: EntityKind;
+}
+
+export interface Enemy extends Entity {
+  kind: 'enemy';
   position: Position;
   movement: Movement;
   health: Health;
@@ -48,7 +56,8 @@ export interface Enemy {
   specialDamage?: number;
 }
 
-export interface Player {
+export interface Player extends Entity {
+  kind: 'player';
   position: Position;
   movement: Movement;
   health: Health;
@@ -57,7 +66,8 @@ export interface Player {
 }
 
 // a static, non-moving prop that only exists to soak hits and break
-export interface Barrel {
+export interface Barrel extends Entity {
+  kind: 'barrel';
   position: Position;
   health: Health;
   size: 1;
