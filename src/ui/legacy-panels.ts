@@ -5,6 +5,7 @@ import type { Player } from '../types/entities.ts';
 export interface LegacyPanelsDeps {
   player: Player;
   map: TileGrid;
+  onMapOpen?: () => void;
 }
 
 export interface LegacyPanelsHandle {
@@ -49,6 +50,7 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
   function setMapOpen(v: boolean): void {
     mapOpen = v;
     worldMapOverlay.style.display = v ? 'flex' : 'none';
+    if (v) deps.onMapOpen?.();
   }
   mapToggleBtn.addEventListener('click', () => setMapOpen(!mapOpen));
   worldMapCloseBtn.addEventListener('click', () => setMapOpen(false));
