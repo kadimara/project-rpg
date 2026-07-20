@@ -32,15 +32,18 @@ Deploys automatically via `.github/workflows/deploy.yml` on every push to `main`
 The codebase is data-oriented: game entities are plain objects made of small composable trait interfaces, and behavior lives in standalone functions grouped by folder, wired together only in `main.ts`.
 
 **`src/types/`** — shared interfaces, no logic.
+
 - `entities.ts` defines trait interfaces (`Position`, `Movement`, `Health`, `Combat`) that `Player`, `Enemy`, and `Barrel` compose via `extends`, not inheritance hierarchies. `Combatant = Player | Enemy` (things that can attack), `Defender = Player | Enemy | Barrel` (things that can be attacked).
 - `world.ts` / `combat.ts` define the tile grid types and combat-effect types (telegraphs, floating damage text).
 
 **`src/entities/`** — factories and per-kind helpers (`createPlayer`, `createEnemies`, `createBoss`, `createBarrels`), plus:
+
 - `store.ts` — `EntityStore` is a `Map<id, Defender>` holding the player + all enemies + all barrels together; read via `getPlayer`/`getEnemies`/`getBarrels`. This is the single source of truth for "what's alive right now" — enemies/barrels are removed from this map on death, not just hidden.
 - `actor.ts` — shared movement/animation stepping (`startStep`, `updateActorAnimation`) used by both the player and enemies.
 - `footprint.ts` — generalizes 1x1 vs 2x2 (boss) actors into a list of occupied tiles, so walkability/adjacency/targeting code doesn't need separate boss-sized branches.
 
 **`src/systems/`** — the actual gameplay logic, as functions that take the relevant entities plus a `deps` object of callbacks/predicates (not singletons or globals). Notably:
+
 - `world.ts` — map generation/constants (`TILE`, `MAP_W/H`, `VP_W/H`, `SPAWN_X/Y`) and terrain walkability.
 - `walkability.ts` — builds the `walkable` / `enemyChaseWalkable` / `bossFootprintWalkable` predicate functions once (closing over map/trees/store), then hands them down as deps to player/enemy controllers.
 - `pathfinding.ts` — plain BFS (`findPath` for exact-tile clicks, `bfsChase` for "get adjacent to a moving target").
@@ -59,6 +62,7 @@ The codebase is data-oriented: game entities are plain objects made of small com
 ### Coordinate systems
 
 Three coordinate spaces are used throughout — keep them straight when touching movement/rendering code:
+
 - **Tile coords** (`tileX`/`tileY`): integer grid position.
 - **World pixel coords** (`px`/`py`): `tile * TILE` (TILE = 16), used for smooth movement interpolation (`fromX/fromY/toX/toY` + `moveStart/moveDur` in `Movement`).
 - **Screen coords** (`sx`/`sy`): world pixels minus the camera offset (`getClampedCamX/Y`), used only in `render/`.

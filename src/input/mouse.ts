@@ -32,11 +32,11 @@ export function createHoverTracker(
   getCamera: () => { camX: number; camY: number },
 ): HoverTracker {
   let hoveredTile: TileCoord | null = null;
-  canvas.addEventListener('mousemove', (e) => {
+  canvas.addEventListener('pointermove', (e) => {
     const { camX, camY } = getCamera();
     hoveredTile = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
   });
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener('pointerleave', () => {
     hoveredTile = null;
   });
   return {
@@ -54,13 +54,14 @@ export interface ClickHandlerDeps {
   getCamera: () => { camX: number; camY: number };
 }
 
-// resolves a canvas click into whichever action applies: attack a clicked enemy
-// or barrel, or just walk to the clicked tile
+// resolves a canvas click/tap into whichever action applies: attack a clicked
+// enemy or barrel, or just walk to the clicked tile
 export function createClickHandler(
   canvas: HTMLCanvasElement,
   deps: ClickHandlerDeps,
 ): void {
-  canvas.addEventListener('click', (e) => {
+  canvas.addEventListener('pointerup', (e) => {
+    if (!e.isPrimary) return;
     const { camX, camY } = deps.getCamera();
     const { x, y } = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
     const player = deps.player;
