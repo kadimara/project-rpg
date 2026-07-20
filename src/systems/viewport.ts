@@ -1,38 +1,60 @@
-export interface CanvasFitOptions {
-  logicalWidth: number;
-  logicalHeight: number;
+import { TILE, MAP_W, MAP_H } from './world.ts';
+
+// Preserves the original 13x9 = 117 tile "zoom level" while reshaping the
+// viewport to the container's aspect ratio. Clamped so the camera always
+// keeps room to scroll within the map (24x18 tiles) instead of the viewport
+// ever needing to be as large as the map itself.
+const REFERENCE_AREA = 13 * 9;
+const MIN_VP_TILES = 8;
+const MARGIN_TILES = 4;
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
 }
 
-export function fitCanvasToContainer(
-  canvas: HTMLCanvasElement,
-  container: HTMLElement,
-  { logicalWidth, logicalHeight }: CanvasFitOptions,
-): void {
-  const availW = container.clientWidth;
-  const availH = container.clientHeight;
-  if (availW <= 0 || availH <= 0) return;
-  const scale = Math.min(availW / logicalWidth, availH / logicalHeight);
-  canvas.style.width = `${logicalWidth * scale}px`;
-  canvas.style.height = `${logicalHeight * scale}px`;
+function computeViewportTiles(
+  containerW: number,
+  containerH: number,
+): { vpW: number; vpH: number } {
+  const aspect = containerW / containerH;
+  const vpW = clamp(
+    Math.round(Math.sqrt(REFERENCE_AREA * aspect)),
+    MIN_VP_TILES,
+    MAP_W - MARGIN_TILES,
+  );
+  const vpH = clamp(
+    Math.round(Math.sqrt(REFERENCE_AREA / aspect)),
+    MIN_VP_TILES,
+    MAP_H - MARGIN_TILES,
+  );
+  return { vpW, vpH };
 }
 
-export interface FitHandle {
-  recompute: () => void;
+export interface AdaptiveViewportHandle {
   dispose: () => void;
 }
 
-export function observeCanvasFit(
+export function observeAdaptiveViewport(
   canvas: HTMLCanvasElement,
   container: HTMLElement,
-  opts: CanvasFitOptions,
-): FitHandle {
+  onResize?: () => void,
+): AdaptiveViewportHandle {
   let scheduled = false;
   const recompute = () => {
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      fitCanvasToContainer(canvas, container, opts);
+      const availW = container.clientWidth;
+      const availH = container.clientHeight;
+      if (availW <= 0 || availH <= 0) return;
+      const { vpW, vpH } = computeViewportTiles(availW, availH);
+      canvas.width = vpW * TILE;
+      canvas.height = vpH * TILE;
+      const scale = Math.min(availW / canvas.width, availH / canvas.height);
+      canvas.style.width = `${canvas.width * scale}px`;
+      canvas.style.height = `${canvas.height * scale}px`;
+      onResize?.();
     });
   };
   const ro = new ResizeObserver(recompute);
@@ -40,7 +62,6 @@ export function observeCanvasFit(
   window.addEventListener('orientationchange', recompute);
   recompute();
   return {
-    recompute,
     dispose: () => {
       ro.disconnect();
       window.removeEventListener('orientationchange', recompute);

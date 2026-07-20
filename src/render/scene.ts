@@ -4,8 +4,6 @@ import type { Player, Enemy, Barrel } from '../types/entities.ts';
 import type { CombatState } from '../types/combat.ts';
 import {
   TILE,
-  VP_W,
-  VP_H,
   MAP_W,
   MAP_H,
   terrainWalkable,
@@ -47,8 +45,8 @@ export function renderScene(
 ): void {
   const { map, trees, player, enemies, barrels, state, hoveredTile } = deps;
 
-  const camX = getClampedCamX(player.position.px);
-  const camY = getClampedCamY(player.position.py);
+  const camX = getClampedCamX(player.position.px, canvas.width);
+  const camY = getClampedCamY(player.position.py, canvas.height);
 
   ctx.fillStyle = '#0a0a0a';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -58,8 +56,8 @@ export function renderScene(
   const offX = -(camX - startCol * TILE);
   const offY = -(camY - startRow * TILE);
 
-  const colsToDraw = VP_W + 2;
-  const rowsToDraw = VP_H + 2;
+  const colsToDraw = canvas.width / TILE + 2;
+  const rowsToDraw = canvas.height / TILE + 2;
 
   for (let r = 0; r < rowsToDraw; r++) {
     for (let c = 0; c < colsToDraw; c++) {

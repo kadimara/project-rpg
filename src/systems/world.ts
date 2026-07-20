@@ -2,8 +2,6 @@ import { TileType } from '../types/world.ts';
 import type { TileGrid, Tree } from '../types/world.ts';
 
 export const TILE = 16;
-export const VP_W = 13;
-export const VP_H = 9;
 export const SPAWN_X = 3;
 export const SPAWN_Y = 3;
 export const MAP_W = 24;

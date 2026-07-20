@@ -44,7 +44,8 @@ The codebase is data-oriented: game entities are plain objects made of small com
 
 **`src/systems/`** — the actual gameplay logic, as functions that take the relevant entities plus a `deps` object of callbacks/predicates (not singletons or globals). Notably:
 
-- `world.ts` — map generation/constants (`TILE`, `MAP_W/H`, `VP_W/H`, `SPAWN_X/Y`) and terrain walkability.
+- `world.ts` — map generation/constants (`TILE`, `MAP_W/H`, `SPAWN_X/Y`) and terrain walkability.
+- `viewport.ts` — `observeAdaptiveViewport` computes how many tiles are visible from the screen's aspect ratio (preserving the original ~13x9 tile "zoom level" while reshaping to fit any screen, clamped to the map's size) and resizes the game canvas's backing store accordingly; there's no fixed `VP_W`/`VP_H` — `canvas.width`/`canvas.height` are the live source of truth for viewport size, consumed directly by `camera.ts`/`scene.ts`.
 - `walkability.ts` — builds the `walkable` / `enemyChaseWalkable` / `bossFootprintWalkable` predicate functions once (closing over map/trees/store), then hands them down as deps to player/enemy controllers.
 - `pathfinding.ts` — plain BFS (`findPath` for exact-tile clicks, `bfsChase` for "get adjacent to a moving target").
 - `playerController.ts` / `enemyAI.ts` — per-frame decision logic (move along path, chase, attack when adjacent). The boss additionally telegraphs a ranged attack (`state.telegraphs`) that lands after a delay, resolved by `resolveTelegraphs`.

@@ -1,15 +1,7 @@
 import './style.css';
-import {
-  SPAWN_X,
-  SPAWN_Y,
-  TILE,
-  VP_W,
-  VP_H,
-  buildMap,
-  buildTrees,
-} from './systems/world.ts';
+import { SPAWN_X, SPAWN_Y, buildMap, buildTrees } from './systems/world.ts';
 import { createWalkabilityPredicates } from './systems/walkability.ts';
-import { observeCanvasFit } from './systems/viewport.ts';
+import { observeAdaptiveViewport } from './systems/viewport.ts';
 import {
   createCombatState,
   attemptAttack,
@@ -40,14 +32,8 @@ const worldCanvas = document.getElementById(
 const worldCtx = worldCanvas.getContext('2d')!;
 worldCtx.imageSmoothingEnabled = false;
 
-observeCanvasFit(canvas, canvas.parentElement!, {
-  logicalWidth: VP_W * TILE,
-  logicalHeight: VP_H * TILE,
-});
-const worldMapPanel = document.querySelector('.world-map-panel') as HTMLElement;
-const mapFit = observeCanvasFit(worldCanvas, worldMapPanel, {
-  logicalWidth: 192,
-  logicalHeight: 144,
+observeAdaptiveViewport(canvas, canvas.parentElement!, () => {
+  ctx.imageSmoothingEnabled = false;
 });
 
 const map = buildMap();
@@ -59,11 +45,7 @@ const barrels = createBarrels();
 const store = createEntityStore(player, [...enemies, ...barrels]);
 const combatState = createCombatState();
 
-const legacy = initLegacyPanels({
-  player,
-  map,
-  onMapOpen: () => mapFit.recompute(),
-});
+const legacy = initLegacyPanels({ player, map });
 
 const combatCtx: CombatContext = {
   state: combatState,
@@ -86,8 +68,8 @@ const keyboard = createKeyboardState(() => {
 
 function getCamera() {
   return {
-    camX: getClampedCamX(player.position.px),
-    camY: getClampedCamY(player.position.py),
+    camX: getClampedCamX(player.position.px, canvas.width),
+    camY: getClampedCamY(player.position.py, canvas.height),
   };
 }
 

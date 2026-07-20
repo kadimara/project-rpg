@@ -34,7 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 900px;
+  max-width: 1024px;
   width: 100%;
   height: 100dvh;
 }
@@ -182,8 +182,8 @@ canvas#game {
   align-items: center;
   gap: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  max-width: 92vw;
-  max-height: 80vh;
+  width: 92%;
+  height: 80%;
 }
 #worldmap-canvas {
   image-rendering: pixelated;
@@ -191,6 +191,9 @@ canvas#game {
   display: block;
   border: 1px solid var(--stone-light);
   touch-action: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 .world-map-title {
   font-family: 'Press Start 2P', monospace;
