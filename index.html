@@ -44,6 +44,29 @@
               Map <span class="key">M</span>
             </button>
           </div>
+          <div class="action-bar">
+            <!-- key labels mirror src/input/actionKeys.ts's ACTION_KEY_BINDINGS -->
+            <div class="action-slot" id="action-slot-0">
+              <span class="key">K</span>
+              <span class="action-name" id="action-name-0">Sword</span>
+              <span class="action-charges" id="action-charges-0"></span>
+            </div>
+            <div class="action-slot" id="action-slot-1">
+              <span class="key">L</span>
+              <span class="action-name" id="action-name-1">Bomb</span>
+              <span class="action-charges" id="action-charges-1"></span>
+            </div>
+            <div class="action-slot" id="action-slot-2">
+              <span class="key">J</span>
+              <span class="action-name" id="action-name-2">Potion</span>
+              <span class="action-charges" id="action-charges-2"></span>
+            </div>
+            <div class="action-slot" id="action-slot-3">
+              <span class="key">I</span>
+              <span class="action-name" id="action-name-3">Elixir</span>
+              <span class="action-charges" id="action-charges-3"></span>
+            </div>
+          </div>
           <div class="world-map-overlay" id="world-map-overlay">
             <div class="world-map-panel">
               <div class="world-map-title">World map</div>
@@ -79,7 +102,10 @@
         also work &nbsp;&middot;&nbsp; attacked enemies chase you until you kill
         them or they knock you out &nbsp;&middot;&nbsp; watch for the red ground
         marker — that's the boss's projectile about to land &nbsp;&middot;&nbsp;
-        <span class="key">M</span> opens the world map
+        <span class="key">M</span> opens the world map &nbsp;&middot;&nbsp;
+        <span class="key">K</span>/<span class="key">L</span>/<span class="key"
+          >J</span
+        >/<span class="key">I</span> use your A/B/X/Y action items
       </p>
     </div>
     <script type="module" src="/src/main.ts"></script>

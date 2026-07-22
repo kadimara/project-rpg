@@ -4,7 +4,12 @@ import type { CombatState } from '../types/combat.ts';
 import type { EntityStore } from '../entities/store.ts';
 
 export function createCombatState(): CombatState {
-  return { telegraphs: [], floatingTexts: [], respawnMessageUntil: 0 };
+  return {
+    telegraphs: [],
+    floatingTexts: [],
+    bombThrows: [],
+    respawnMessageUntil: 0,
+  };
 }
 
 // Spawns a piece of floating text (damage numbers, status messages, ...) above an entity.

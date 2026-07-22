@@ -1,4 +1,5 @@
 import type { Direction } from '../types/world.ts';
+import { ACTION_KEY_BINDINGS, ACTION_KEYS } from './actionKeys.ts';
 
 const MOVE_KEYS = [
   'ArrowUp',
@@ -17,17 +18,20 @@ const MOVE_KEYS = [
 
 export interface KeyboardState {
   heldDir(): Direction | null;
+  heldActionSlot(i: number): boolean;
 }
 
 // note: the original clears the player's active path/targets on *every* keydown,
-// not just movement keys - preserved here via the unconditional onKeyDown callback
+// not just movement keys - preserved here via the unconditional onKeyDown callback,
+// except for the action-slot keys, which must not cancel an in-progress path/target
 export function createKeyboardState(onKeyDown: () => void): KeyboardState {
   const keys: Record<string, boolean> = {};
 
   window.addEventListener('keydown', (e) => {
     if (MOVE_KEYS.includes(e.key)) e.preventDefault();
-    keys[e.key.toLowerCase()] = true;
-    onKeyDown();
+    const key = e.key.toLowerCase();
+    keys[key] = true;
+    if (!ACTION_KEYS.includes(key)) onKeyDown();
   });
   window.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
@@ -41,5 +45,9 @@ export function createKeyboardState(onKeyDown: () => void): KeyboardState {
     return null;
   }
 
-  return { heldDir };
+  function heldActionSlot(i: number): boolean {
+    return !!keys[ACTION_KEY_BINDINGS[i].key];
+  }
+
+  return { heldDir, heldActionSlot };
 }

@@ -10,6 +10,7 @@ export interface LegacyPanelsDeps {
 export interface LegacyPanelsHandle {
   isMapOpen: () => boolean;
   updateHud: () => void;
+  updateActionBar: (now: number) => void;
 }
 
 export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
@@ -39,6 +40,33 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
       : 'none';
   }
 
+  // ---- action bar ----
+  const actionSlotEls = [0, 1, 2, 3].map((i) => ({
+    root: document.getElementById('action-slot-' + i)!,
+    name: document.getElementById('action-name-' + i)!,
+    charges: document.getElementById('action-charges-' + i)!,
+  }));
+
+  function updateActionBar(now: number): void {
+    player.actionSlots.forEach((item, i) => {
+      const el = actionSlotEls[i];
+      if (!item) {
+        el.name.textContent = 'empty';
+        el.charges.textContent = '';
+        el.root.classList.remove('on-cooldown');
+        return;
+      }
+      el.name.textContent = item.name;
+      el.charges.textContent =
+        item.kind === 'potion' ? item.charges + '/' + item.maxCharges : '';
+      const onCooldown =
+        item.kind === 'melee'
+          ? now - player.combat.lastAttack < player.combat.atkCooldown
+          : now - item.lastUsed < item.cooldown;
+      el.root.classList.toggle('on-cooldown', onCooldown);
+    });
+  }
+
   // ---- world map toggle ----
   const worldMapOverlay = document.getElementById(
     'world-map-overlay',
@@ -59,9 +87,11 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
   });
 
   updateHud();
+  updateActionBar(0);
 
   return {
     isMapOpen: () => mapOpen,
     updateHud,
+    updateActionBar,
   };
 }

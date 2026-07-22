@@ -10,6 +10,11 @@ import {
 } from './systems/combat.ts';
 import { updateEnemies, resolveTelegraphs } from './systems/enemyAI.ts';
 import { updatePlayer } from './systems/playerController.ts';
+import {
+  useSlot,
+  resolveBombThrows,
+  type ItemContext,
+} from './systems/items.ts';
 import { handleEntityDeath } from './systems/death.ts';
 import { createPlayer } from './entities/player.ts';
 import { createEnemies, createBoss, enemyAtTile } from './entities/enemies.ts';
@@ -61,6 +66,12 @@ const walkability = createWalkabilityPredicates({
   store,
 });
 
+const itemCtx: ItemContext = {
+  combatCtx,
+  store,
+  updateHud: legacy.updateHud,
+};
+
 const keyboard = createKeyboardState(() => {
   player.movement.path = [];
   player.attackTarget = null;
@@ -101,9 +112,14 @@ function tick(now: number): void {
     updateHud: legacy.updateHud,
   });
 
+  for (let i = 0; i < 4; i++) {
+    if (keyboard.heldActionSlot(i)) useSlot(itemCtx, player, i, now);
+  }
+
   resolveTelegraphs(combatState, player, now, (dmg, t) =>
     applyDamage(combatCtx, player, dmg, t),
   );
+  resolveBombThrows(combatState, store, combatCtx, now);
 
   renderScene(ctx, canvas, now, {
     map,
@@ -114,6 +130,8 @@ function tick(now: number): void {
     state: combatState,
     hoveredTile: hover.hoveredTile,
   });
+
+  legacy.updateActionBar(now);
 
   if (legacy.isMapOpen()) {
     renderWorldMap(worldCtx, {

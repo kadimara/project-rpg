@@ -1,4 +1,5 @@
 import type { Direction, TileCoord } from './world.ts';
+import type { ActionSlots } from './items.ts';
 
 export type Footprint = TileCoord[];
 
@@ -63,6 +64,7 @@ export interface Player extends Entity {
   health: Health;
   combat: Combat;
   attackTarget: Enemy | Barrel | null;
+  actionSlots: ActionSlots;
 }
 
 // a static, non-moving prop that only exists to soak hits and break

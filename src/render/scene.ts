@@ -20,7 +20,79 @@ import {
   BOSS_EDGE,
   BARREL_COLOR,
   BARREL_EDGE,
+  BOMB_COLOR,
+  BOMB_EDGE,
+  BOMB_MARKER_RGB,
+  BOMB_MARKER_STROKE_RGB,
 } from './colors.ts';
+
+interface ArcEffect {
+  x: number;
+  y: number;
+  fromX?: number;
+  fromY?: number;
+  bornTime: number;
+  impactTime: number;
+}
+
+// ground "impact zone" marker, growing more solid as impact approaches
+function drawImpactMarker(
+  ctx: CanvasRenderingContext2D,
+  camX: number,
+  camY: number,
+  tg: ArcEffect,
+  now: number,
+  fillRgb: string,
+  strokeRgb: string,
+): void {
+  const total = tg.impactTime - tg.bornTime;
+  const progress = Math.min(1, (now - tg.bornTime) / total);
+  const sx = tg.x * TILE - camX;
+  const sy = tg.y * TILE - camY;
+  ctx.fillStyle = `rgba(${fillRgb},${(0.12 + progress * 0.38).toFixed(2)})`;
+  ctx.fillRect(sx, sy, TILE, TILE);
+  ctx.strokeStyle = `rgba(${strokeRgb},${(0.5 + progress * 0.5).toFixed(2)})`;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(sx + 0.5, sy + 0.5, TILE - 1, TILE - 1);
+}
+
+// flying projectile that arcs from its launch point to the landing tile
+function drawArcProjectile(
+  ctx: CanvasRenderingContext2D,
+  camX: number,
+  camY: number,
+  tg: ArcEffect,
+  now: number,
+  edgeColor: string,
+  fillColor: string,
+): void {
+  if (tg.fromX === undefined || tg.fromY === undefined) return;
+  const total = tg.impactTime - tg.bornTime;
+  const progress = Math.min(1, (now - tg.bornTime) / total);
+  const toX = tg.x * TILE + TILE / 2;
+  const toY = tg.y * TILE + TILE / 2;
+  const curX = tg.fromX + (toX - tg.fromX) * progress;
+  const curY = tg.fromY + (toY - tg.fromY) * progress;
+  const arc = Math.sin(progress * Math.PI) * TILE * 1.6;
+  const px = curX - camX;
+  const py = curY - camY - arc;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(curX - camX, curY - camY, 3, 1.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const projSize = Math.max(3, Math.round(TILE * 0.3));
+  ctx.fillStyle = edgeColor;
+  ctx.fillRect(
+    px - projSize / 2 - 1,
+    py - projSize / 2 - 1,
+    projSize + 2,
+    projSize + 2,
+  );
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(px - projSize / 2, py - projSize / 2, projSize, projSize);
+}
 
 export interface SceneDeps {
   map: TileGrid;
@@ -83,17 +155,19 @@ export function renderScene(
 
   // telegraphed projectile landing zones - grow more solid as impact approaches
   for (const tg of state.telegraphs) {
-    const total = tg.impactTime - tg.bornTime;
-    const progress = Math.min(1, (now - tg.bornTime) / total);
-    const sx = tg.x * TILE - camX;
-    const sy = tg.y * TILE - camY;
-    ctx.fillStyle =
-      'rgba(214,59,59,' + (0.12 + progress * 0.38).toFixed(2) + ')';
-    ctx.fillRect(sx, sy, TILE, TILE);
-    ctx.strokeStyle =
-      'rgba(255,110,110,' + (0.5 + progress * 0.5).toFixed(2) + ')';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sx + 0.5, sy + 0.5, TILE - 1, TILE - 1);
+    drawImpactMarker(ctx, camX, camY, tg, now, '214,59,59', '255,110,110');
+  }
+  // thrown bomb landing zones
+  for (const bomb of state.bombThrows) {
+    drawImpactMarker(
+      ctx,
+      camX,
+      camY,
+      bomb,
+      now,
+      BOMB_MARKER_RGB,
+      BOMB_MARKER_STROKE_RGB,
+    );
   }
 
   // trees, enemies, and the player all get sorted by their "foot" position
@@ -195,33 +269,11 @@ export function renderScene(
 
   // flying projectiles for active telegraphs - arc from the boss to the landing tile
   for (const tg of state.telegraphs) {
-    if (tg.fromX === undefined || tg.fromY === undefined) continue;
-    const total = tg.impactTime - tg.bornTime;
-    const progress = Math.min(1, (now - tg.bornTime) / total);
-    const toX = tg.x * TILE + TILE / 2;
-    const toY = tg.y * TILE + TILE / 2;
-    const curX = tg.fromX + (toX - tg.fromX) * progress;
-    const curY = tg.fromY + (toY - tg.fromY) * progress;
-    const arc = Math.sin(progress * Math.PI) * TILE * 1.6;
-    const px = curX - camX;
-    const py = curY - camY - arc;
-
-    // small drop shadow on the ground below the projectile
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(curX - camX, curY - camY, 3, 1.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    const projSize = Math.max(3, Math.round(TILE * 0.3));
-    ctx.fillStyle = BOSS_EDGE;
-    ctx.fillRect(
-      px - projSize / 2 - 1,
-      py - projSize / 2 - 1,
-      projSize + 2,
-      projSize + 2,
-    );
-    ctx.fillStyle = '#ff7a4a';
-    ctx.fillRect(px - projSize / 2, py - projSize / 2, projSize, projSize);
+    drawArcProjectile(ctx, camX, camY, tg, now, BOSS_EDGE, '#ff7a4a');
+  }
+  // flying bombs - arc from the player to the landing tile
+  for (const bomb of state.bombThrows) {
+    drawArcProjectile(ctx, camX, camY, bomb, now, BOMB_EDGE, BOMB_COLOR);
   }
 
   if (

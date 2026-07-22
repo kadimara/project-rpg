@@ -21,3 +21,7 @@ export const TREE_TRUNK_FILL = '#7a5636';
 export const TREE_TRUNK_EDGE = '#54391f';
 export const BARREL_COLOR = '#a67c3d';
 export const BARREL_EDGE = '#6e502a';
+export const BOMB_COLOR = '#3f9d6b';
+export const BOMB_EDGE = '#1f5c3d';
+export const BOMB_MARKER_RGB = '63,157,107';
+export const BOMB_MARKER_STROKE_RGB = '139,230,174';

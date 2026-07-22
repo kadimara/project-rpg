@@ -5,6 +5,7 @@ import type { CombatState } from '../types/combat.ts';
 import type { WalkableFn } from '../systems/pathfinding.ts';
 import { startStep } from './actor.ts';
 import { getEnemies, getPlayer, type EntityStore } from './store.ts';
+import { createDefaultActionSlots } from './items.ts';
 
 export const PLAYER_BASE_MAXHP = 10;
 export const PLAYER_BASE_ATK = 1;
@@ -43,6 +44,7 @@ export function createPlayer(spawnX: number, spawnY: number): Player {
       lastAttack: 0,
     },
     attackTarget: null,
+    actionSlots: createDefaultActionSlots(),
   };
 }
 

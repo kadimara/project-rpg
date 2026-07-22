@@ -137,6 +137,44 @@ canvas#game {
   border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
+.action-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(20, 15, 26, 0.75);
+  border-top: 1px solid var(--stone-light);
+  padding: 4px 10px;
+}
+.action-slot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid var(--stone-light);
+  border-radius: 3px;
+  background: var(--stone-mid);
+  transition:
+    opacity 0.15s,
+    filter 0.15s;
+}
+.action-slot.on-cooldown {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.action-name {
+  color: var(--parchment);
+  font-size: 10px;
+}
+.action-charges {
+  color: var(--parchment-dim);
+  font-size: 9px;
+}
+
 .toggle-btn {
   background: var(--stone-mid);
   color: var(--parchment);
