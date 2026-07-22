@@ -50,7 +50,15 @@ const barrels = createBarrels();
 const store = createEntityStore(player, [...enemies, ...barrels]);
 const combatState = createCombatState();
 
-const legacy = initLegacyPanels({ player, map });
+const legacy = initLegacyPanels({
+  player,
+  map,
+  // itemCtx is declared further below, but initLegacyPanels only ever stores
+  // this closure as a click-listener callback - it never invokes it during
+  // construction - so by the time a tap actually fires, itemCtx is long since
+  // assigned. Do not make initLegacyPanels call onUseSlot synchronously.
+  onUseSlot: (i) => useSlot(itemCtx, player, i, performance.now()),
+});
 
 const combatCtx: CombatContext = {
   state: combatState,

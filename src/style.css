@@ -168,12 +168,15 @@ canvas#game {
   align-items: center;
   justify-content: center;
   gap: 1px;
-  width: 40px;
+  width: 46px;
+  min-height: 46px;
   padding: 3px 2px;
   border: 1px solid var(--stone-light);
   border-radius: 6px;
   background: rgba(20, 15, 26, 0.75);
   text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
   transition:
     opacity 0.15s,
     filter 0.15s;

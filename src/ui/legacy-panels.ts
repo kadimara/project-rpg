@@ -5,6 +5,7 @@ import type { Player } from '../types/entities.ts';
 export interface LegacyPanelsDeps {
   player: Player;
   map: TileGrid;
+  onUseSlot: (slotIndex: number) => void;
 }
 
 export interface LegacyPanelsHandle {
@@ -14,7 +15,7 @@ export interface LegacyPanelsHandle {
 }
 
 export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
-  const { player, map } = deps;
+  const { player, map, onUseSlot } = deps;
 
   // ---- HUD ----
   const statHp = document.getElementById('stat-hp')!;
@@ -46,6 +47,10 @@ export function initLegacyPanels(deps: LegacyPanelsDeps): LegacyPanelsHandle {
     name: document.getElementById('action-name-' + i)!,
     charges: document.getElementById('action-charges-' + i)!,
   }));
+
+  actionSlotEls.forEach((el, i) => {
+    el.root.addEventListener('click', () => onUseSlot(i));
+  });
 
   function updateActionBar(now: number): void {
     player.actionSlots.forEach((item, i) => {
