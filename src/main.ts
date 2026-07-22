@@ -115,18 +115,16 @@ function tick(now: number): void {
   updateEnemies(getEnemies(store), player, combatState, now, {
     enemyChaseWalkable: walkability.enemyChaseWalkable,
     bossFootprintWalkable: walkability.bossFootprintWalkable,
-    attemptAttack: (attacker, defender, t) =>
-      attemptAttack(combatCtx, attacker, defender, t),
-    updateHud: legacy.updateHud,
   });
 
   for (let i = 0; i < 4; i++) {
     if (keyboard.heldActionSlot(i)) useSlot(itemCtx, player, i, now);
   }
 
-  resolveTelegraphs(combatState, player, now, (dmg, t) =>
-    applyDamage(combatCtx, player, dmg, t),
-  );
+  resolveTelegraphs(combatState, player, now, (dmg, t) => {
+    applyDamage(combatCtx, player, dmg, t);
+    legacy.updateHud();
+  });
   resolveBombThrows(combatState, store, combatCtx, now);
 
   renderScene(ctx, canvas, now, {

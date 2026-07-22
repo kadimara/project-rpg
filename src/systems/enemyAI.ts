@@ -1,5 +1,5 @@
 import { TILE, MAP_W, MAP_H } from './world.ts';
-import type { Combatant, Enemy, Player } from '../types/entities.ts';
+import type { Enemy, Player } from '../types/entities.ts';
 import type { CombatState } from '../types/combat.ts';
 import { startStep, updateActorAnimation } from '../entities/actor.ts';
 import {
@@ -10,12 +10,11 @@ import {
 import { bfsChase, dirBetween, tileDist } from './pathfinding.ts';
 
 const AGGRO_LEASH_RADIUS = 6; // tiles - enemies give up the chase past this range
+const MELEE_TELEGRAPH_MS = 350; // wind-up before a melee hit lands, giving the player a beat to react
 
 export interface EnemyAIDeps {
   enemyChaseWalkable: (x: number, y: number, self: Enemy) => boolean;
   bossFootprintWalkable: (x: number, y: number, self: Enemy) => boolean;
-  attemptAttack: (attacker: Combatant, defender: Player, now: number) => void;
-  updateHud: () => void;
 }
 
 export function updateEnemies(
@@ -105,9 +104,15 @@ export function updateEnemies(
         player.position.tileX,
         player.position.tileY,
       );
-      if (!en.isBoss) {
-        deps.attemptAttack(en, player, now);
-        deps.updateHud();
+      if (!en.isBoss && now - en.combat.lastAttack >= en.combat.atkCooldown) {
+        en.combat.lastAttack = now;
+        state.telegraphs.push({
+          x: player.position.tileX,
+          y: player.position.tileY,
+          bornTime: now,
+          impactTime: now + MELEE_TELEGRAPH_MS,
+          dmg: en.combat.atkDamage,
+        });
       }
     } else {
       const stepWalkable = en.isBoss

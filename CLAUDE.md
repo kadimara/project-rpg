@@ -48,7 +48,7 @@ The codebase is data-oriented: game entities are plain objects made of small com
 - `viewport.ts` — the map is a single fixed-size 8x8 room shown in full at all times (no camera scroll), so `observeFixedViewport` just sets the game canvas's backing store to the map's exact pixel size (`MAP_W/H * TILE`) and scales it uniformly via CSS (letterboxed) to fit whatever container it's placed in; `canvas.width`/`canvas.height` are still the live source of truth for viewport size, consumed directly by `camera.ts`/`scene.ts`.
 - `walkability.ts` — builds the `walkable` / `enemyChaseWalkable` / `bossFootprintWalkable` predicate functions once (closing over map/trees/store), then hands them down as deps to player/enemy controllers.
 - `pathfinding.ts` — plain BFS (`findPath` for exact-tile clicks, `bfsChase` for "get adjacent to a moving target").
-- `playerController.ts` / `enemyAI.ts` — per-frame decision logic (move along path, chase, attack when adjacent). The boss additionally telegraphs a ranged attack (`state.telegraphs`) that lands after a delay, resolved by `resolveTelegraphs`.
+- `playerController.ts` / `enemyAI.ts` — per-frame decision logic (move along path, chase, attack when adjacent). All enemy attacks are telegraphed: regular enemies queue a short melee wind-up (`state.telegraphs`) on the player's tile when they land a hit, and the boss additionally telegraphs its ranged special the same way; both kinds land after a delay, resolved uniformly by `resolveTelegraphs`.
 - `combat.ts` — `applyDamage`/`attemptAttack`, cooldown-gated, spawns floating damage numbers and triggers aggro/death.
 - `death.ts` — respawns the player or removes the entity from the `EntityStore` and clears it as the player's attack target.
 

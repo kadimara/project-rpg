@@ -9,7 +9,7 @@ import { createDefaultActionSlots } from './items.ts';
 
 export const PLAYER_BASE_MAXHP = 10;
 export const PLAYER_BASE_ATK = 1;
-export const PLAYER_BASE_ATK_COOLDOWN = 650;
+export const PLAYER_BASE_ATK_COOLDOWN = 750;
 
 export function createPlayer(spawnX: number, spawnY: number): Player {
   return {
@@ -25,7 +25,7 @@ export function createPlayer(spawnX: number, spawnY: number): Player {
       dir: 'down',
       moving: false,
       moveStart: 0,
-      moveDur: 260,
+      moveDur: 300,
       fromX: 0,
       fromY: 0,
       toX: 0,
