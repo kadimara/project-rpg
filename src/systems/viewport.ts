@@ -1,44 +1,18 @@
 import { TILE, MAP_W, MAP_H } from './world.ts';
 
-// Preserves the original 13x9 = 117 tile "zoom level" while reshaping the
-// viewport to the container's aspect ratio. Clamped so the camera always
-// keeps room to scroll within the map (24x18 tiles) instead of the viewport
-// ever needing to be as large as the map itself.
-const REFERENCE_AREA = 13 * 9;
-const MIN_VP_TILES = 8;
-const MARGIN_TILES = 4;
-
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v));
-}
-
-function computeViewportTiles(
-  containerW: number,
-  containerH: number,
-): { vpW: number; vpH: number } {
-  const aspect = containerW / containerH;
-  const vpW = clamp(
-    Math.round(Math.sqrt(REFERENCE_AREA * aspect)),
-    MIN_VP_TILES,
-    MAP_W - MARGIN_TILES,
-  );
-  const vpH = clamp(
-    Math.round(Math.sqrt(REFERENCE_AREA / aspect)),
-    MIN_VP_TILES,
-    MAP_H - MARGIN_TILES,
-  );
-  return { vpW, vpH };
-}
-
-export interface AdaptiveViewportHandle {
+// The map is a single fixed-size room, always shown in full - there is no
+// camera scroll. The canvas backing store is therefore always exactly the
+// map's pixel size; it's scaled uniformly (letterboxed) via CSS to fit
+// whatever container it's placed in.
+export interface FixedViewportHandle {
   dispose: () => void;
 }
 
-export function observeAdaptiveViewport(
+export function observeFixedViewport(
   canvas: HTMLCanvasElement,
   container: HTMLElement,
   onResize?: () => void,
-): AdaptiveViewportHandle {
+): FixedViewportHandle {
   let scheduled = false;
   const recompute = () => {
     if (scheduled) return;
@@ -48,9 +22,8 @@ export function observeAdaptiveViewport(
       const availW = container.clientWidth;
       const availH = container.clientHeight;
       if (availW <= 0 || availH <= 0) return;
-      const { vpW, vpH } = computeViewportTiles(availW, availH);
-      canvas.width = vpW * TILE;
-      canvas.height = vpH * TILE;
+      canvas.width = MAP_W * TILE;
+      canvas.height = MAP_H * TILE;
       const scale = Math.min(availW / canvas.width, availH / canvas.height);
       canvas.style.width = `${canvas.width * scale}px`;
       canvas.style.height = `${canvas.height * scale}px`;

@@ -12,7 +12,7 @@ import {
 } from './colors.ts';
 import { MAP_W, MAP_H } from '../systems/world.ts';
 
-export const WORLD_TILE = 8;
+export const WORLD_TILE = 16;
 
 export interface WorldMapDeps {
   map: TileGrid;

@@ -1,7 +1,7 @@
 import './style.css';
 import { SPAWN_X, SPAWN_Y, buildMap, buildTrees } from './systems/world.ts';
 import { createWalkabilityPredicates } from './systems/walkability.ts';
-import { observeAdaptiveViewport } from './systems/viewport.ts';
+import { observeFixedViewport } from './systems/viewport.ts';
 import {
   createCombatState,
   attemptAttack,
@@ -37,7 +37,7 @@ const worldCanvas = document.getElementById(
 const worldCtx = worldCanvas.getContext('2d')!;
 worldCtx.imageSmoothingEnabled = false;
 
-observeAdaptiveViewport(canvas, canvas.parentElement!, () => {
+observeFixedViewport(canvas, canvas.parentElement!, () => {
   ctx.imageSmoothingEnabled = false;
 });
 

@@ -2,9 +2,9 @@ import { TILE } from '../systems/world.ts';
 import type { Barrel } from '../types/entities.ts';
 
 const BARREL_SPAWNS: Array<[number, number]> = [
-  [8, 5],
-  [14, 9],
-  [19, 15],
+  [0, 0],
+  [7, 0],
+  [0, 4],
 ];
 
 export function createBarrels(): Barrel[] {

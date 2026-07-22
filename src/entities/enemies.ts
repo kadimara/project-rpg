@@ -3,9 +3,9 @@ import type { Enemy } from '../types/entities.ts';
 import { actorFootprint } from './footprint.ts';
 
 const ENEMY_SPAWNS: Array<[number, number]> = [
-  [12, 5],
-  [17, 13],
-  [6, 6],
+  [2, 1],
+  [5, 1],
+  [7, 4],
 ];
 
 export function createEnemies(): Enemy[] {
@@ -35,7 +35,7 @@ export function createBoss(): Enemy {
   return {
     id: crypto.randomUUID(),
     kind: 'enemy',
-    position: { tileX: 11, tileY: 9, px: 11 * TILE, py: 9 * TILE },
+    position: { tileX: 3, tileY: 3, px: 3 * TILE, py: 3 * TILE },
     movement: {
       dir: 'down',
       moving: false,
