@@ -8,12 +8,15 @@ import {
 } from './combat.ts';
 import type { Barrel, Defender, Enemy, Player } from '../types/entities.ts';
 import type { CombatState } from '../types/combat.ts';
-import type { BombItem, PotionItem } from '../types/items.ts';
+import type { ActionSlot, BombItem, PotionItem } from '../types/items.ts';
 import {
   actorFootprint,
   tileAdjacentToFootprint,
 } from '../entities/footprint.ts';
 import { getBarrels, getEnemies, type EntityStore } from '../entities/store.ts';
+
+// max tiles from the player a bomb can be aimed and thrown
+export const BOMB_AIM_RANGE = 4;
 
 export interface ItemContext {
   combatCtx: CombatContext;
@@ -21,6 +24,8 @@ export interface ItemContext {
   updateHud: () => void;
 }
 
+// bomb use is aim-driven (see tryStartBombAim/throwBomb) rather than fired
+// straight from a slot press, so useSlot only ever handles melee and potions
 export function useSlot(
   ctx: ItemContext,
   player: Player,
@@ -32,11 +37,62 @@ export function useSlot(
 
   if (item.kind === 'melee') {
     useMelee(ctx, player, now);
-  } else if (item.kind === 'bomb') {
-    useBomb(ctx, player, item, now);
-  } else {
+  } else if (item.kind === 'potion') {
     usePotion(ctx, player, item, now);
   }
+}
+
+// whether a slot holds a bomb that's off cooldown and can start aiming
+export function tryStartBombAim(
+  item: ActionSlot,
+  now: number,
+): item is BombItem {
+  return !!item && item.kind === 'bomb' && now - item.lastUsed >= item.cooldown;
+}
+
+// throws an aimed bomb, clamping the landing tile to the max throw range and
+// the map bounds
+export function throwBomb(
+  ctx: ItemContext,
+  player: Player,
+  item: BombItem,
+  now: number,
+  targetX: number,
+  targetY: number,
+): void {
+  item.lastUsed = now;
+
+  const landX = Math.max(
+    1,
+    Math.min(
+      MAP_W - 2,
+      Math.max(
+        player.position.tileX - BOMB_AIM_RANGE,
+        Math.min(player.position.tileX + BOMB_AIM_RANGE, targetX),
+      ),
+    ),
+  );
+  const landY = Math.max(
+    1,
+    Math.min(
+      MAP_H - 2,
+      Math.max(
+        player.position.tileY - BOMB_AIM_RANGE,
+        Math.min(player.position.tileY + BOMB_AIM_RANGE, targetY),
+      ),
+    ),
+  );
+
+  ctx.combatCtx.state.bombThrows.push({
+    x: landX,
+    y: landY,
+    fromX: player.position.px + TILE / 2,
+    fromY: player.position.py,
+    bornTime: now,
+    impactTime: now + item.fuseTime,
+    dmg: item.damage,
+    radius: item.radius,
+  });
 }
 
 // resolves bombs whose fuse has expired, dealing AoE damage to every enemy
@@ -118,43 +174,6 @@ function useMelee(ctx: ItemContext, player: Player, now: number): void {
   if (!target) return;
   attemptAttack(ctx.combatCtx, player, target, now);
   ctx.updateHud();
-}
-
-function useBomb(
-  ctx: ItemContext,
-  player: Player,
-  item: BombItem,
-  now: number,
-): void {
-  if (now - item.lastUsed < item.cooldown) return;
-  item.lastUsed = now;
-
-  let dx = 0;
-  let dy = 0;
-  if (player.movement.dir === 'up') dy = -1;
-  else if (player.movement.dir === 'down') dy = 1;
-  else if (player.movement.dir === 'left') dx = -1;
-  else dx = 1;
-
-  const landX = Math.max(
-    1,
-    Math.min(MAP_W - 2, player.position.tileX + dx * 2),
-  );
-  const landY = Math.max(
-    1,
-    Math.min(MAP_H - 2, player.position.tileY + dy * 2),
-  );
-
-  ctx.combatCtx.state.bombThrows.push({
-    x: landX,
-    y: landY,
-    fromX: player.position.px + TILE / 2,
-    fromY: player.position.py,
-    bornTime: now,
-    impactTime: now + item.fuseTime,
-    dmg: item.damage,
-    radius: item.radius,
-  });
 }
 
 function usePotion(

@@ -102,6 +102,7 @@ export interface SceneDeps {
   barrels: Barrel[];
   state: CombatState;
   hoveredTile: TileCoord | null;
+  aiming: boolean;
 }
 
 interface Sortable {
@@ -115,7 +116,8 @@ export function renderScene(
   now: number,
   deps: SceneDeps,
 ): void {
-  const { map, trees, player, enemies, barrels, state, hoveredTile } = deps;
+  const { map, trees, player, enemies, barrels, state, hoveredTile, aiming } =
+    deps;
 
   const camX = getClampedCamX(player.position.px, canvas.width);
   const camY = getClampedCamY(player.position.py, canvas.height);
@@ -288,7 +290,11 @@ export function renderScene(
     const isObstacle =
       !terrainWalkable(map, hoveredTile.x, hoveredTile.y) ||
       treeBlocksAt(trees, hoveredTile.x, hoveredTile.y);
-    ctx.strokeStyle = isObstacle ? '#7a7a82' : '#ffffff';
+    ctx.strokeStyle = isObstacle
+      ? '#7a7a82'
+      : aiming
+        ? `rgb(${BOMB_MARKER_STROKE_RGB})`
+        : '#ffffff';
     ctx.lineWidth = 1;
     ctx.strokeRect(hx + 0.5, hy + 0.5, TILE - 1, TILE - 1);
   }

@@ -52,16 +52,48 @@ export interface ClickHandlerDeps {
   barrelAtTile: (x: number, y: number) => Barrel | undefined;
   walkable: WalkableFn;
   getCamera: () => { camX: number; camY: number };
+  isAiming: () => boolean;
+  onAimPress: (tile: TileCoord) => void;
+  onPressStart: () => void;
+  onPressEnd: () => void;
 }
 
 // resolves a canvas click/tap into whichever action applies: attack a clicked
-// enemy or barrel, or just walk to the clicked tile
+// enemy or barrel, or just walk to the clicked tile. A press pauses the game
+// (deps.onPressStart) so there's time to aim the release; release resolves the
+// action and resumes (deps.onPressEnd). While aiming a bomb, the roles flip: the
+// press itself is the target and resolves immediately (deps.onAimPress).
 export function createClickHandler(
   canvas: HTMLCanvasElement,
   deps: ClickHandlerDeps,
 ): void {
+  // an aim-confirm press resolves (and clears aiming) on pointerdown itself, so
+  // the matching pointerup can no longer tell from deps.isAiming() alone that
+  // this gesture was an aim throw rather than a move/attack press - track it
+  // per-gesture so pointerup doesn't also resolve a move from the same release.
+  let aimedThisGesture = false;
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary) return;
+    if (deps.isAiming()) {
+      aimedThisGesture = true;
+      const { camX, camY } = deps.getCamera();
+      const tile = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
+      deps.onAimPress(tile);
+      return;
+    }
+    aimedThisGesture = false;
+    deps.onPressStart();
+  });
+
   canvas.addEventListener('pointerup', (e) => {
     if (!e.isPrimary) return;
+    if (aimedThisGesture) {
+      aimedThisGesture = false;
+      return;
+    }
+    deps.onPressEnd();
+
     const { camX, camY } = deps.getCamera();
     const { x, y } = screenToTile(canvas, camX, camY, e.clientX, e.clientY);
     const player = deps.player;
@@ -84,5 +116,14 @@ export function createClickHandler(
       player.attackTarget = null;
       player.movement.path = path;
     }
+  });
+
+  canvas.addEventListener('pointercancel', (e) => {
+    if (!e.isPrimary) return;
+    if (aimedThisGesture) {
+      aimedThisGesture = false;
+      return;
+    }
+    deps.onPressEnd();
   });
 }

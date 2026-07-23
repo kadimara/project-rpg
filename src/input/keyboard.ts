@@ -24,14 +24,22 @@ export interface KeyboardState {
 // note: the original clears the player's active path/targets on *every* keydown,
 // not just movement keys - preserved here via the unconditional onKeyDown callback,
 // except for the action-slot keys, which must not cancel an in-progress path/target
-export function createKeyboardState(onKeyDown: () => void): KeyboardState {
+export function createKeyboardState(
+  onKeyDown: () => void,
+  onActionKeyDown: (slotIndex: number) => void,
+): KeyboardState {
   const keys: Record<string, boolean> = {};
 
   window.addEventListener('keydown', (e) => {
     if (MOVE_KEYS.includes(e.key)) e.preventDefault();
     const key = e.key.toLowerCase();
+    if (!ACTION_KEYS.includes(key)) {
+      onKeyDown();
+    } else if (!keys[key]) {
+      const slotIndex = ACTION_KEY_BINDINGS.findIndex((b) => b.key === key);
+      if (slotIndex !== -1) onActionKeyDown(slotIndex);
+    }
     keys[key] = true;
-    if (!ACTION_KEYS.includes(key)) onKeyDown();
   });
   window.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
